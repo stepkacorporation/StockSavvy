@@ -21,7 +21,11 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'update-available-stocks-every-day': {
         'task': 'apps.stocks.tasks.load_available_stocks',
-        'schedule': crontab(),
+        'schedule': crontab(minute=0, hour=0),
+    },
+    'load-new-candles-for-all-available-stocks-every-day': {
+        'task': 'apps.stocks.tasks.load_latest_historical_data',
+        'schedule': crontab(minute=0, hour=0),
     },
 }
 
@@ -34,7 +38,7 @@ def handle_task_failure(task_id, exception, args, kwargs, traceback, einfo, **kw
     """
 
     UserModel = get_user_model()
-    admins = UserModel.objects.filter(is_admin=True)
+    admins = UserModel.objects.filter(is_staff=True)
 
     subject = 'Error in Celery task'
     message = f'An error occurred in Celery task[{task_id}]: {exception}\n\n{einfo}'
