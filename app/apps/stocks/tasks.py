@@ -32,9 +32,8 @@ def load_stock_data() -> None:
     loaded_available_stocks = load_available_stocks.delay()
     loaded_available_stocks.get()  # Waiting for the result of loading the available stocks
 
-    load_historical_data_result = load_historical_data.delay()
-    load_historical_data_group = load_historical_data_result.get()  # Waiting for the task group to finish running
-    load_historical_data_group.get()  # Waiting for the result of loading historical data for all stocks
+    load_historical_data_tasks_group = load_historical_data()
+    load_historical_data_tasks_group.join()  # Waiting for the result of loading historical data for all stocks
 
     logger.info(f'Stock data has been successfully loaded in {perf_counter() - _start_time}s')
 
