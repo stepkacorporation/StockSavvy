@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Activation Complete{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center h-100">
+    <div class="col-lg-3 col-sm-6 col-10">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-text text-center">Activation Complete</h6>
+            </div>
+            <div class="card-body">
+                <p>Your account has been successfully activated. You can now log in using your credentials.</p>
+                <div class="text-center">
+                    <a href="{% url 'login' %}" class="btn btn-primary">Log In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

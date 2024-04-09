@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Settings - {{ user.username }}{% endblock title %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="col-3">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-text text-center">Settings</h6>
+            </div>
+            <div class="card-body">
+                <p>Username: {{ user.username }}</p>
+                <p>Email: {{ user.email }}</p>
+                <p>Date Joined: {{ user.created }}</p>
+                <p class="text-center mb-0"><a href="{% url 'password_change' %}" class="btn btn-primary">Change My Password</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

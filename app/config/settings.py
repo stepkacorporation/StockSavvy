@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
 
-from datetime import timedelta
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -43,6 +42,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_extensions',
+    
+    'django_bootstrap5',
+    'crispy_forms',
+    'crispy_bootstrap5',
 
     'apps.accounts.apps.AccountsConfig',
     'apps.stocks.apps.StocksConfig',
@@ -75,6 +78,10 @@ TEMPLATES = [
         },
     },
 ]
+
+# CRYSPY FORMS
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
@@ -125,6 +132,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -132,6 +143,9 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.User'
+
+LOGIN_REDIRECT_URL = 'stocks'
+ACCOUNT_ACTIVATION_DAYS = 30
 
 EMAIL_HOST = str(os.getenv('EMAIL_HOST'))
 EMAIL_HOST_USER = str(os.getenv('EMAIL_HOST_USER'))

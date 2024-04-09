@@ -10,6 +10,8 @@ def validate_username(username):
         raise ValidationError('Username must be at least 4 characters long.')
     if len(username) > 20:
         raise ValidationError('Username cannot exceed 20 characters in length.')
+    if username != username.lower():
+        raise ValidationError('Username must be in lowercase.')
     if not username[0].isalpha():
         raise ValidationError('Username must start with a letter.')
     if not (username[-1].isalpha() or username[-1].isdigit()):

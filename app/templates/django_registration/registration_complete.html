@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Registration Complete{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center h-100">
+    <div class="col-lg-3 col-sm-6 col-10">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-text text-center">Registration Complete!</h6>
+            </div>
+            <div class="card-body">
+                <p>
+                    An email containing account activation information has been sent to your email address.
+                     Please check your inbox and follow the instructions provided to activate your account.
+                </p>
+                <div class="text-center">
+                    <a href="{% url 'login' %}" class="btn btn-primary">Log In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

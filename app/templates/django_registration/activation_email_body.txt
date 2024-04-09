@@ -1,0 +1,10 @@
+Dear {{ user.username }},
+
+Welcome to {{ site.domain }}! To activate your account, please click on the following link:
+
+{{ scheme }}://{{ site.domain }}{% url 'django_registration_activate' activation_key %}
+
+This link will expire in {{ expiration_days }} days.
+
+Sincerely,
+The {{ site.domain }} Team

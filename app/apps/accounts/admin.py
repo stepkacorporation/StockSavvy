@@ -1,9 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import Group
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
 from .models import User
-from .forms import CustomUserChangeForm, CustomUserCreationForm
 
 
 @admin.register(User)
@@ -12,8 +11,8 @@ class UserAdmin(UserAdmin):
     The user's admin panel.
     """
 
-    form = CustomUserChangeForm
-    add_form = CustomUserCreationForm
+    form = UserChangeForm
+    add_form = UserCreationForm
 
     list_display = ('username', 'email', 'is_staff')
     list_display_links = ('username', 'email')

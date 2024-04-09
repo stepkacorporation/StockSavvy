@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.core.mail import send_mail
 from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
@@ -19,7 +20,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name='username',
         unique=True,
         validators=[validate_username],
-        help_text='Enter a username containing 4-20 characters. It can only contain letters,'
+        help_text='Enter a username in lowercase containing 4-20 characters. It can only contain letters,'
                   ' hyphens, and digits.'
     )
     email = models.EmailField(max_length=255, verbose_name='email', unique=True)
@@ -38,3 +39,18 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         ordering = ('username',)
+
+    def get_full_name(self):
+        """Returns username."""
+
+        return self.username
+
+    def get_short_name(self):
+        """Returns the short name for the user."""
+
+        return self.username
+
+    def email_user(self, subject, message, from_email=None, **kwargs):
+        """Send an email to this user."""
+        
+        send_mail(subject, message, from_email, [self.email], **kwargs)
