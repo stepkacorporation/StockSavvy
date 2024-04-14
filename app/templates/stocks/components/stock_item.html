@@ -1,0 +1,25 @@
+{% load formatting_filters %}
+
+<a href="{{ stock.get_absolute_url }}" class="list-group-item list-group-item-action">
+    <div class="row">
+        <div class="col">
+            <div>{{ stock.shortname }}</div>
+            <div class="small">{{ stock.ticker }}</div>
+        </div>
+        <div class="col text-end">{{ stock.prevprice|normalize }} {{ stock.currencyid|convert_currency_code }}</div>
+
+        {% with value_per_day=stock.price_change.value_per_day percent_per_day=stock.price_change.percent_per_day %}
+            <div class="col text-end {% if value_per_day > 0 %}text-success{% elif value_per_day < 0 %}text-danger{% endif %}">
+                <div>{% if value_per_day > 0 %}+{% endif %}{{ value_per_day|normalize:'places=5' }} {{ stock.currencyid|convert_currency_code }}</div>
+                <div class="small">{{ percent_per_day|normalize:'places=2,minus=False' }} %</div>
+            </div>
+        {% endwith %}
+
+        {% with value_per_year=stock.price_change.value_per_year percent_per_year=stock.price_change.percent_per_year %}
+            <div class="col text-end {% if value_per_year > 0 %}text-success{% elif value_per_year < 0 %}text-danger{% endif %}">
+                <div>{% if value_per_year > 0 %}+{% endif %}{{ value_per_year|normalize:'places=5' }} {{ stock.currencyid|convert_currency_code }}</div>
+                <div class="small">{{ percent_per_year|normalize:'places=2,minus=False' }} %</div>
+            </div>
+        {% endwith %}
+    </div>
+</a>

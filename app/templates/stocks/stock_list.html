@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}StockSavvy - stocks{% endblock title %}
+
+{% block header %}
+
+    {% include 'stocks/components/ticker_search.html' %}
+
+{% endblock header %}
+
+{% block content %}
+
+    <div class="container">
+        
+        <div class="list-group mb-4">
+            {% if stocks %}
+                <div class="list-group-item list-group-item-secondary">
+                    <div class="row">
+                        {% with current_sorting=request.GET.sort_by current_order=request.GET.order %}
+                            <div class="col">
+                                {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='name' current_order=current_order title='Name' %}
+                            </div>
+                            <div class="col text-end">
+                                {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='price' current_order=current_order title='Price' %}
+                            </div>
+                            <div class="col text-end">
+                                {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='per_day' current_order=current_order title='Per Day' %}
+                            </div>
+                            <div class="col text-end">
+                                {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='per_year' current_order=current_order title='Per Year' %}
+                            </div>
+                        {% endwith %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% for stock in stocks %}
+            
+                {% include 'stocks/components/stock_item.html' %}
+
+            {% empty %}
+
+                <p class="text-center fs-5">
+                    {% if request.GET.query %}
+                        No stocks were found for your search.
+                    {% else %}
+                        There is no information about stocks.
+                    {% endif %}
+                </p>
+
+            {% endfor %}
+        </div>
+
+        {% include 'pagination.html' %}
+    </div>
+
+{% endblock content %}

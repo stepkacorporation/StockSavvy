@@ -1,0 +1,15 @@
+{% load static %}
+
+<div 
+    onclick="window.location.href='?{% if params %}{{ params }}&{% endif %}sort_by={{ sort_by }}&order={% if current_order == 'desc' or current_order == '' or current_sorting != sort_by and current_order == 'asc' %}asc{% else %}desc{% endif %}'"
+    style="cursor: pointer;"
+>
+    {{ title }}
+    {% if current_order == 'asc' and current_sorting == sort_by %}
+        <img src="{% static "icons/sort-down.svg" %}" alt="⇓">
+    {% elif current_order == 'desc' and current_sorting == sort_by %}
+        <img src="{% static "icons/sort-up.svg" %}" alt="⇑">
+    {% else %}
+        <img src="{% static "icons/arrow-down-up.svg" %}" style="width: 13px; height: 13px;" alt="">
+    {% endif %}
+</div>
