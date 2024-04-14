@@ -1,5 +1,7 @@
 import requests
 
+from django.utils import timezone
+
 from moexalgo import Ticker
 from datetime import date, timedelta
 from time import perf_counter
@@ -8,6 +10,7 @@ from celery.utils.log import get_task_logger
 from typing import Generator
 
 from config.celery import add_file_logger
+from ..models import Stock
 
 logger = add_file_logger(get_task_logger(__name__))
 
@@ -104,3 +107,66 @@ def load_candles(ticker: str, start_date: date, end_date: date) -> Generator[Gen
 
     logger.info(f'Candles for the {ticker=} have been successfully loaded in {perf_counter() - _start_time}s')
     return None
+
+
+def calculate_price_change(stock: Stock, days: int) -> tuple[int | float, int | float]:
+    """
+    Calculates the price change for a stock for a specified number of days.
+
+    Parameters:
+        - stock (Stock): The stock for which you need to calculate the price change.
+        - days (int): The number of days for which the price change needs to be calculated.
+
+    Returns:
+        - Tuple[int | float, int | float]: A tuple containing a price change and a percentage change.
+        If there is no data for the specified time period, (0, 0) is returned.
+    """
+    
+    tz_now = timezone.now()
+    last_days = tz_now - timedelta(days=days)
+    candles_per_days = stock.candles.filter(time_range__overlap=[last_days, tz_now]).order_by('time_range')
+
+    if candles_per_days.exists():
+        first_open = candles_per_days.first().open
+        last_close = candles_per_days.last().close
+        price_change = last_close - first_open
+
+        if first_open != 0:
+            percent_change = (price_change / first_open) * 100
+
+            price_change = 0 if price_change == -0 else price_change
+            percent_change = 0 if percent_change == -0 else percent_change
+            
+            return price_change, percent_change
+
+    return 0, 0
+    
+
+def calculate_price_change_per_day(stock: Stock):
+    """
+    Calculates the price change in one day for the specified stock.
+    
+    Parameters:
+        - stock (Stock): A stock for which you need to calculate the price change in one day.
+
+    Returns:
+        - Tuple[int | float, int | float]: A tuple containing a price change and a percentage change.
+        If there is no data for the specified time period, (0, 0) is returned.
+    """
+
+    return calculate_price_change(stock, 1)
+
+
+def calculate_price_change_per_year(stock: Stock):
+    """
+    Calculates the price change for the year for the specified stock.
+    
+    Parameters:
+        - stock (Stock): A stock for which you need to calculate the price change in one day.
+
+    Returns:
+        - Tuple[int | float, int | float]: A tuple containing a price change and a percentage change.
+        If there is no data for the specified time period, (0, 0) is returned.
+    """
+
+    return calculate_price_change(stock, 365)

@@ -4,23 +4,51 @@ from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db.backends.postgresql.psycopg_any import DateTimeRange
 from celery.utils.log import get_task_logger
-from celery.result import GroupResult
+from celery.exceptions import Retry
 from moexalgo import Market
 from requests.exceptions import RequestException
 from time import perf_counter
 from datetime import date, timedelta
 
 from config.celery import app, add_file_logger
-from .utils.task_utils import get_available_dates, load_candles
-from .models import Stock, Candle
+from .utils.task_utils import (
+    get_available_dates,
+    load_candles,
+    calculate_price_change_per_day,
+    calculate_price_change_per_year
+)
+from .models import Stock, Candle, PriceChange
 
 logger = add_file_logger(get_task_logger(__name__))
 
 
-def load_stock_data() -> None:
+@app.task
+def _log_execution_time(start_time: float, message: str) -> float:
     """
-    Runs tasks to load available stocks and
-    historical data for all loaded available stocks.
+    Logs the execution time of a task.
+
+    Parameters:
+        - start_time (float): The start time of the task execuction.
+        - message (str): The message to be logged along with the execution time.
+
+    Returns:
+        - float: The execution time of the task in seconds.
+    """
+
+    execution_time = perf_counter() - start_time
+    logger.info(f'{message} {execution_time}s')
+    return execution_time
+
+
+@app.task
+def load_stock_data(update: bool = False) -> None:
+    """
+    Runs tasks to load available stocks, historical data
+    and price changes for all loaded available stocks.
+
+    Parameters:
+        - update (bool): If True, loads historical data for the latest available period.
+        If False, loads historical data for all available periods.
 
     Returns:
         - None
@@ -28,14 +56,16 @@ def load_stock_data() -> None:
 
     logger.info('The start of load stock data')
     _start_time = perf_counter()
+    _execution_message = 'Stock data has been successfully loaded in'
 
-    loaded_available_stocks = load_available_stocks.delay()
-    loaded_available_stocks.get()  # Waiting for the result of loading the available stocks
+    load_historical_data_func = load_latest_historical_data if update else load_historical_data
 
-    load_historical_data_tasks_group = load_historical_data()
-    load_historical_data_tasks_group.join()  # Waiting for the result of loading historical data for all stocks
-
-    logger.info(f'Stock data has been successfully loaded in {perf_counter() - _start_time}s')
+    celery.chain(
+        load_available_stocks.si(),
+        load_historical_data_func(),
+        load_price_changes(),
+        _log_execution_time.si(_start_time, _execution_message),
+    ).apply_async()
 
 
 @app.task(autoretry_for=(Exception,), retry_backoff=5, retry_kwargs={'max_retries': 10})
@@ -126,16 +156,16 @@ def load_available_stocks() -> int:
 
 
 @app.task
-def load_latest_historical_data(days: int = 1) -> None:
+def load_latest_historical_data(days: int = 1) -> celery.group:
     """
-    Loads historical data for the latest specified number of days.
+    Starts and returns a task group to load historical data for all stocks.
 
     Parameters:
         - days (int): The number of days for which historical data should be loaded. 
             Defaults to 1, meaning loading data for the previous day.
 
     Returns:
-        - None
+        - celery.group: A group of tasks to load historical data for the specified period.
     """
     
     days = days if days >= 1 else 1
@@ -143,11 +173,11 @@ def load_latest_historical_data(days: int = 1) -> None:
     end_date = date.today()
     start_date = end_date - timedelta(days=days)
 
-    load_historical_data.delay(start_date, end_date)
+    return load_historical_data(start_date, end_date)
 
 
 @app.task
-def load_historical_data(start_date: date = None, end_date: date = None) -> GroupResult:
+def load_historical_data(start_date: date = None, end_date: date = None) -> celery.group:
     """
     Starts and returns a task group to load historical data for all stocks.
 
@@ -158,11 +188,15 @@ def load_historical_data(start_date: date = None, end_date: date = None) -> Grou
             Defaults to None, meaning loading until the latest available date.
 
     Returns:
-        - GroupResult: The result of executing the group task.
+        - celery.group: A group of tasks to load historical data for the specified period.
     """
     
-    stocks = Stock.objects.all()
-    tasks_group = celery.group(load_historical_data_for_ticker.s(stock.ticker, start_date, end_date) for stock in stocks)()
+    stocks = Stock.objects.all().values('ticker')
+    tasks_group = celery.group(
+        load_historical_data_for_ticker.si(stock['ticker'], start_date, end_date)
+        for stock in stocks
+    )
+
     return tasks_group
 
 
@@ -196,7 +230,7 @@ def load_historical_data_for_ticker(ticker: str, start_date: date = None, end_da
         stock = Stock.objects.get(ticker=ticker)
     except Stock.DoesNotExist as error:
         logger.error(f'Stock with {ticker=} does not exist: {error}', exc_info=True)
-        raise
+        raise Retry(exc=error, when=None)
 
     dates = get_available_dates(ticker)
 
@@ -251,3 +285,75 @@ def load_historical_data_for_ticker(ticker: str, start_date: date = None, end_da
         logger.info(f'{created_candles} historical data records for the {ticker=} has been'
                     f' successfully loaded in {perf_counter() - _start_time}s')
         return created_candles
+
+
+@app.task
+def load_price_changes() -> celery.group:
+    """
+    Starts and returns a task group to load price changes for all stocks.
+
+    Returns:
+        - celery.group: A group of tasks to load price changes for all stocks.
+    """
+    
+    stocks = Stock.objects.all().values('ticker')
+    tasks_group = celery.group(
+        load_price_changes_for_ticker.si(stock['ticker'])
+        for stock in stocks
+    )
+
+    return tasks_group
+
+
+@app.task(autoretry_for=(Exception,), retry_backoff=5, retry_kwargs={'max_retries': 10})
+def load_price_changes_for_ticker(ticker: str) -> None:
+    """
+    Loads price changes for a specific stock ticker.
+
+    Parameters:
+        - ticker (str): The ticker symbol of the stock.
+
+    Raises:
+        - Retry: If the stock with the provided ticker does not exist.
+        - Exception: For any other unexpected error during the process.
+
+    Returns:
+        - None
+    """
+
+    logger.info(f'The start of load price changes for {ticker=}')
+    _start_time = perf_counter()
+
+    try:
+        stock = Stock.objects.get(ticker=ticker)
+    except Stock.DoesNotExist as error:
+        logger.error(f'Stock with {ticker=} does not exist: {error}', exc_info=True)
+        raise Retry(exc=error, when=None)
+    
+    try:
+        value_per_day, percent_per_day = calculate_price_change_per_day(stock)
+        value_per_year, percent_per_year = calculate_price_change_per_year(stock)
+                
+        price_change, _ = PriceChange.objects.get_or_create(
+            stock=stock,
+            defaults={
+                'value_per_day': 0,
+                'percent_per_day': 0,
+                'value_per_year': 0,
+                'percent_per_year': 0,
+            },                                            
+        )
+
+        price_change.value_per_day = value_per_day
+        price_change.percent_per_day = percent_per_day
+        price_change.value_per_year = value_per_year
+        price_change.percent_per_year = percent_per_year
+
+        price_change.save()
+    except Exception as error:
+        logger.error(f'An unexpected error occured: {error}', exc_info=True) 
+        raise
+
+    logger.info(f'Price changes for {ticker=} have been loaded successfully in {perf_counter() - _start_time}s')
+
+

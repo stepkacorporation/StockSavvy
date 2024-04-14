@@ -19,13 +19,10 @@ app.config_from_object('django.conf:settings')
 app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
-    'update-available-stocks-every-day': {
-        'task': 'apps.stocks.tasks.load_available_stocks',
+    'update-stock-data-every-day': {
+        'task': 'apps.stocks.tasks.load_stock_data',
         'schedule': crontab(minute=0, hour=0),
-    },
-    'load-new-candles-for-all-available-stocks-every-day': {
-        'task': 'apps.stocks.tasks.load_latest_historical_data',
-        'schedule': crontab(minute=0, hour=0),
+        'kwargs': {'update': True},
     },
 }
 
