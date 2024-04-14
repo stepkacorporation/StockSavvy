@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Stock, Candle
+from .models import Stock, Candle, PriceChange
 
 
 @admin.register(Stock)
@@ -21,4 +21,14 @@ class CandleAdmin(admin.ModelAdmin):
     """
 
     list_display = ('stock', 'open', 'close', 'time_range')
+    search_fields = ('stock__ticker',)
+
+
+@admin.register(PriceChange)
+class PriceChangeAdmin(admin.ModelAdmin):
+    """
+    Admin panel for price changes.
+    """
+
+    list_display = ('stock', 'value_per_day', 'value_per_year')
     search_fields = ('stock__ticker',)

@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.urls import reverse
 from django.contrib.postgres.fields import DateTimeRangeField
 
 
@@ -59,7 +59,12 @@ class Stock(models.Model):
         SECOND = 2, 'Second'
         THIRD = 3, 'Third'
 
-    ticker = models.CharField(primary_key=True, max_length=10, verbose_name='ticker', help_text='The ticker of the stock.')
+    ticker = models.CharField(
+        primary_key=True,
+        max_length=10,
+        verbose_name='ticker',
+        help_text='The ticker of the stock.'
+    )
     shortname = models.CharField(
         max_length=50,
         verbose_name='short name',
@@ -198,6 +203,9 @@ class Stock(models.Model):
             self.ticker = self.ticker.upper()
         super().save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        return reverse('stock-detail', kwargs={'ticker': self.ticker})
+
 
 class Candle(models.Model):
     """
@@ -255,3 +263,28 @@ class Candle(models.Model):
         verbose_name_plural = 'candles'
         ordering = ('-time_range',)
         unique_together = ('stock', 'time_range')
+
+
+class PriceChange(models.Model):
+    """
+    A model for storing stock price changes.
+    """
+
+    stock = models.OneToOneField(
+        Stock,
+        on_delete=models.CASCADE,
+        related_name='price_change',
+        verbose_name='stock',
+        primary_key=True
+    )
+    value_per_day = models.DecimalField(max_digits=36, decimal_places=18, verbose_name='value per day')
+    percent_per_day = models.DecimalField(max_digits=36, decimal_places=18, verbose_name='percent per day')
+    value_per_year = models.DecimalField(max_digits=36, decimal_places=18, verbose_name='value per year')
+    percent_per_year = models.DecimalField(max_digits=36, decimal_places=18, verbose_name='percent per year')
+
+    def __str__(self):
+        return f'{self.stock} - per day: {self.value_per_day}, per year: {self.value_per_year}'
+    
+    class Meta:
+        verbose_name = 'Price Change'
+        verbose_name_plural = 'Price Changes'
