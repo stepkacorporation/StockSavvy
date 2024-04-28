@@ -11,7 +11,7 @@ anychart.onDocumentReady(function () {
     const loadData = (url) => {
         axios.get(url)
             .then(response => {
-                document.querySelector('#stock-chart .spinner-border').style.display = 'none';
+                document.querySelector('#stock-chart #chart-spinner').style.display = 'none';
 
                 data = response.data;
                 const results = data.results.map(item => [
@@ -28,7 +28,11 @@ anychart.onDocumentReady(function () {
 
                 document.getElementById("chart-controls").classList.remove("d-none");
             })
-            .catch(error => console.error('Error fetching data:', error));
+            .catch(error => {
+                console.error('Error fetching data:', error)
+                document.querySelector('#stock-chart #chart-spinner').style.display = 'none';
+                document.querySelector('#stock-chart #no-data').style.display = 'block';
+            });
     };
 
     const chart = anychart.stock();

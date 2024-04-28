@@ -259,10 +259,12 @@ class Stock(models.Model):
         return min_price, max_price
 
     def get_last_price(self):
-        return self.candles.first().close
+        first_candle = self.candles.first()
+        return first_candle.close if first_candle else None
     
     def get_last_candle_date(self):
-        return self.candles.first().time_range.upper
+        first_candle = self.candles.first()
+        return first_candle.time_range.upper if first_candle else None
 
 
 class Candle(models.Model):

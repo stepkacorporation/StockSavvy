@@ -1,8 +1,7 @@
-import json
-
 from django.views.generic import ListView, DetailView
 from django.db.models import Q, Value, DecimalField
 from django.db.models.functions import Coalesce
+from django.core.exceptions import ObjectDoesNotExist
 
 from .templatetags.formatting_filters import normalize, convert_currency_code
 
@@ -77,21 +76,26 @@ class StockDetailView(DetailView):
         opening_price, closing_price = stock_instance.get_opening_and_closing_price_today()
         normalized_last_stock_price = normalize(stock_instance.get_last_price(), places=_decimals)
         
-        value_per_day = stock_instance.price_change.value_per_day
-        percent_per_day = normalize(stock_instance.price_change.percent_per_day, places=2, minus=False)
-        if value_per_day is not None and percent_per_day is not None:
-            _normalized_value_per_day = normalize(value_per_day, places=_decimals, plus=True)
-            change_per_day =  f'{_normalized_value_per_day} {_currency} ({percent_per_day}%)'
-        else:
-            change_per_day = None
+        try:
+            value_per_day = stock_instance.price_change.value_per_day
+            percent_per_day = normalize(stock_instance.price_change.percent_per_day, places=2, minus=False)
+            if value_per_day is not None and percent_per_day is not None:
+                _normalized_value_per_day = normalize(value_per_day, places=_decimals, plus=True)
+                change_per_day =  f'{_normalized_value_per_day} {_currency} ({percent_per_day}%)'
+            else:
+                change_per_day = None
 
-        value_per_year = stock_instance.price_change.value_per_year
-        percent_per_year = normalize(stock_instance.price_change.percent_per_year, places=2, minus=False)
-        if value_per_year is not None and percent_per_year is not None:
-            _normalized_value_per_year = normalize(value_per_year, places=_decimals, plus=True)
-            change_per_year =  f'{_normalized_value_per_year} {_currency} ({percent_per_year}%)'
-        else:
-            change_per_year = None
+            value_per_year = stock_instance.price_change.value_per_year
+            percent_per_year = normalize(stock_instance.price_change.percent_per_year, places=2, minus=False)
+            if value_per_year is not None and percent_per_year is not None:
+                _normalized_value_per_year = normalize(value_per_year, places=_decimals, plus=True)
+                change_per_year =  f'{_normalized_value_per_year} {_currency} ({percent_per_year}%)'
+            else:
+                change_per_year = None
+        except ObjectDoesNotExist:
+            value_per_day, percent_per_day, change_per_day = None, None, None
+            value_per_year, percent_per_year, change_per_year = None, None, None
+
         
         min_price_per_day, max_price_per_day = stock_instance.get_daily_price_range()
         if min_price_per_day is not None and max_price_per_day is not None:
