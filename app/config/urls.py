@@ -20,12 +20,17 @@ from django.conf.urls.static import static
 from django.urls import path, include
 from django.views.generic.base import RedirectView
 
+api_urlpatterns = [
+    path('stocks/', include('apps.stocks.api.urls')),
+]
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('apps.accounts.urls')),
     path('', RedirectView.as_view(url='stocks/', permanent=True)),
     path('stocks/', include('apps.stocks.urls')),
+
+    path('api/', include(api_urlpatterns)),
 ] 
 
 if settings.DEBUG:
