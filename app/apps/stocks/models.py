@@ -1,6 +1,10 @@
 from django.db import models
+from django.db.models import Min, Max
 from django.urls import reverse
+from django.utils import timezone
 from django.contrib.postgres.fields import DateTimeRangeField
+
+from datetime import timedelta
 
 
 class Stock(models.Model):
@@ -205,6 +209,60 @@ class Stock(models.Model):
 
     def get_absolute_url(self):
         return reverse('stock-detail', kwargs={'ticker': self.ticker})
+    
+    def get_opening_and_closing_price_today(self):
+        start_of_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day = start_of_day + timedelta(days=1)
+
+        today_candles = self.candles.filter(
+            time_range__overlap=[start_of_day, end_of_day]
+        ).order_by('time_range')
+        
+        opening_price, closing_price = None, None
+        
+        if today_candles.exists():
+            opening_price = today_candles.first().open
+            closing_price = today_candles.last().close
+
+        return opening_price, closing_price
+    
+    def get_daily_price_range(self):
+        start_of_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day = start_of_day + timedelta(days=1)
+
+        today_candles = self.candles.filter(
+            time_range__overlap=[start_of_day, end_of_day]
+        ).order_by('time_range')
+        
+        min_price, max_price = None, None
+
+        if today_candles.exists():
+            min_price = today_candles.aggregate(min_price=Min('low'))['min_price']
+            max_price = today_candles.aggregate(max_price=Max('high'))['max_price']
+
+        return min_price, max_price
+    
+    def get_yearly_price_range(self):
+        start_of_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day = start_of_day + timedelta(days=1)
+
+        today_candles = self.candles.filter(
+            time_range__overlap=[start_of_day - timedelta(days=365), end_of_day]
+        ).order_by('time_range')
+        
+        min_price, max_price = None, None
+
+        if today_candles.exists():
+            min_price = today_candles.aggregate(min_price=Min('low'))['min_price']
+            max_price = today_candles.aggregate(max_price=Max('high'))['max_price']
+
+        return min_price, max_price
+
+    def get_last_price(self):
+        return self.candles.first().close
+    
+    def get_last_candle_date(self):
+        return self.candles.first().time_range.upper
 
 
 class Candle(models.Model):
