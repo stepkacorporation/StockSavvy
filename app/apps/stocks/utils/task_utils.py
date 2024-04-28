@@ -122,7 +122,7 @@ def calculate_price_change(stock: Stock, days: int) -> tuple[int | float, int | 
         If there is no data for the specified time period, (0, 0) is returned.
     """
     
-    tz_now = timezone.now()
+    tz_now = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     last_days = tz_now - timedelta(days=days)
     candles_per_days = stock.candles.filter(time_range__overlap=[last_days, tz_now]).order_by('time_range')
 
