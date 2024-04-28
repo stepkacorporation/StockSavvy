@@ -8,10 +8,20 @@
 
         <title>{% block title %}{% endblock title %}</title>
         
+        <script src="{% static "common/js/anychart-core.min.js" %}"></script>
+        <script src="{% static "common/js/anychart-stock.min.js" %}"></script>
+        <script src="{% static "common/js/anychart-ui.min.js" %}"></script>
+        <link href="{% static "common/css/anychart-ui.min.css" %}" type="text/css" rel="stylesheet">
+
         {% load django_bootstrap5 %}
         {% bootstrap_css %}
         {% bootstrap_javascript %}
+
+        {% block head %}
+        {% endblock head %}
+
     </head>
+
     <body class="d-flex flex-column min-vh-100">
 
         <header>
@@ -32,5 +42,8 @@
             {% include "footer.html" %}
         </footer>
 
+        <script src="{% static 'common/js/axios.min.js' %}"></script>
+        {% block scripts %}
+        {% endblock scripts %}
     </body>
 </html>

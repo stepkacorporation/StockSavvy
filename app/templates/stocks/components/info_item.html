@@ -1,0 +1,17 @@
+{% load formatting_filters %}
+
+<div class="row justify-content-between pt-3">
+    <div class="col-auto">
+        <div class="text-start text-muted">
+            {{ name }}
+        </div>
+    </div>
+    <div class="col-auto">
+        <div class="text-end">
+            {{ value|default_if_none:"-" }}
+        </div>
+    </div>
+    <div>
+        <hr class="mt-3 mb-0 text-muted">
+    </div>
+</div>
