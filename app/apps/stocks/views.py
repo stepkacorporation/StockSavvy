@@ -1,6 +1,10 @@
+import json
+
 from django.views.generic import ListView, DetailView
 from django.db.models import Q, Value, DecimalField
 from django.db.models.functions import Coalesce
+
+from .templatetags.formatting_filters import normalize, convert_currency_code
 
 from .models import Stock
 
@@ -62,3 +66,64 @@ class StockDetailView(DetailView):
     context_object_name = 'stock'
     slug_field = 'ticker'
     slug_url_kwarg = 'ticker'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        stock_instance = self.get_object()
+        _decimals = stock_instance.decimals
+        _currency = convert_currency_code(stock_instance.currencyid)
+
+        opening_price, closing_price = stock_instance.get_opening_and_closing_price_today()
+        normalized_last_stock_price = normalize(stock_instance.get_last_price(), places=_decimals)
+        
+        value_per_day = stock_instance.price_change.value_per_day
+        percent_per_day = normalize(stock_instance.price_change.percent_per_day, places=2, minus=False)
+        if value_per_day is not None and percent_per_day is not None:
+            _normalized_value_per_day = normalize(value_per_day, places=_decimals, plus=True)
+            change_per_day =  f'{_normalized_value_per_day} {_currency} ({percent_per_day}%)'
+        else:
+            change_per_day = None
+
+        value_per_year = stock_instance.price_change.value_per_year
+        percent_per_year = normalize(stock_instance.price_change.percent_per_year, places=2, minus=False)
+        if value_per_year is not None and percent_per_year is not None:
+            _normalized_value_per_year = normalize(value_per_year, places=_decimals, plus=True)
+            change_per_year =  f'{_normalized_value_per_year} {_currency} ({percent_per_year}%)'
+        else:
+            change_per_year = None
+        
+        min_price_per_day, max_price_per_day = stock_instance.get_daily_price_range()
+        if min_price_per_day is not None and max_price_per_day is not None:
+            min_price_per_day = normalize(min_price_per_day, places=_decimals)
+            max_price_per_day = normalize(max_price_per_day, places=_decimals)
+            daily_price_range = f'{min_price_per_day} {_currency} - {max_price_per_day} {_currency}'
+        else:
+            daily_price_range = '-'
+
+        min_price_per_year, max_price_per_year = stock_instance.get_yearly_price_range()
+        if min_price_per_year is not None and max_price_per_year is not None:
+            min_price_per_year = normalize(min_price_per_year, places=_decimals)
+            max_price_per_year = normalize(max_price_per_year, places=_decimals)
+            yearly_price_range = f'{min_price_per_year} {_currency} - {max_price_per_year} {_currency}'
+        else:
+            yearly_price_range = '-'
+            
+        lot_size = f'1 lot = {stock_instance.lotsize} stocks'
+
+        extra_context = {
+            'opening_price': normalize(opening_price, places=_decimals),
+            'closing_price': normalize(closing_price, places=_decimals),
+            'price_update_date': stock_instance.get_last_candle_date(),
+            'last_stock_price': normalized_last_stock_price,
+            'value_per_day': value_per_day,
+            'change_per_day': change_per_day,
+            'value_per_year': value_per_year,
+            'change_per_year': change_per_year,
+            'daily_price_range': daily_price_range,
+            'yearly_price_range': yearly_price_range,
+            'lot_size': lot_size,
+            'candles': stock_instance.candles,
+        }
+        
+        return context | extra_context
