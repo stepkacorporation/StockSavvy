@@ -3,8 +3,11 @@ from django.db.models import Min, Max
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.postgres.fields import DateTimeRangeField
+from django.contrib.auth import get_user_model
 
 from datetime import timedelta
+
+User = get_user_model()
 
 
 class Stock(models.Model):
@@ -348,3 +351,19 @@ class PriceChange(models.Model):
     class Meta:
         verbose_name = 'Price Change'
         verbose_name_plural = 'Price Changes'
+
+
+class Favourite(models.Model):
+    """
+    A model of the user's favorite stocks.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favourite_stocks', verbose_name='user')
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, verbose_name='stock')
+
+    class Meta:
+        verbose_name = 'Favourite'
+        verbose_name_plural = 'Favourites'
+
+    def __str__(self) -> str:
+        return f'{self.user.username} - {self.stock.shortname} ({self.stock.ticker})'

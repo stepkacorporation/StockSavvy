@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Stock, Candle, PriceChange
+from .models import Stock, Candle, PriceChange, Favourite
 
 
 @admin.register(Stock)
@@ -32,3 +32,13 @@ class PriceChangeAdmin(admin.ModelAdmin):
 
     list_display = ('stock', 'value_per_day', 'value_per_year')
     search_fields = ('stock__ticker',)
+
+
+@admin.register(Favourite)
+class FavouriteAdmin(admin.ModelAdmin):
+    """
+    Admin panel for favorites.
+    """
+
+    list_display = ('user', 'stock')
+    search_fields = ('user', 'stock')
