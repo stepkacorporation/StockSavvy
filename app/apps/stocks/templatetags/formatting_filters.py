@@ -5,23 +5,24 @@ from decimal import Decimal
 register = template.Library()
 
 
-@register.filter
-def normalize(value: Decimal | float, args: str = None) -> str:
+@register.simple_tag
+def normalize(value: Decimal | float, places: int = -1, plus: bool = False, minus: bool = True) -> str:
     """
     The normalize filter is used to format the Decimal or float number
     by removing the extra zeros to the right of the decimal point.
 
     Parameters:
         - value (Decimal or float): The Decimal or float number that needs to be formatted.
-        - args (str, optional): A string containing additional arguments for formatting.
-          Arguments should be provided in the format "key1=value1,key2=value2,...".
-          Supported arguments:
-              - places (int): The number of decimal places to preserve.
-                If provided, the resulting number will be formatted with the specified number of decimal places.
-                If omitted, trailing zeros will be removed without adjusting the number of decimal places.
-              - minus (bool): Specifies whether to preserve the minus sign for negative values.
-                If True, the minus sign will be preserved. If False, the minus sign will be removed.
-                Defaults to True.
+        - places (int, optional): The number of decimal places to preserve.
+          If provided, the resulting number will be formatted with the specified number of decimal places.
+          If omitted, trailing zeros will be removed without adjusting the number of decimal places.
+          Defaults to -1.
+        - plus (bool, optional): Specifies whether to prepend a plus sign for positive values.
+          If True, a plus sign will be added for positive values. If False, no plus sign will be added.
+          Defaults to False.
+        - minus (bool, optional): Specifies whether to preserve the minus sign for negative values.
+          If True, the minus sign will be preserved. If False, the minus sign will be removed.
+          Defaults to True.
 
     Returns:
         - str: A formatted string representing the number without any trailing zeros to
@@ -38,52 +39,59 @@ def normalize(value: Decimal | float, args: str = None) -> str:
           This will display the percent change per day with two decimal places,
           removing any trailing zeros beyond that, and without preserving the minus sign for negative values.
     """
-
-    if value is None:
-        return '-'
     
-    kwargs = {}
-    if args is not None and isinstance(args, str):
-        for arg in args.split(','):
-            k, v = arg.split('=')
-            kwargs[k] = v
-
-    places = int(kwargs.get('places', -1))
-    minus = kwargs.get('minus', 'True') == 'True'
-
     if isinstance(value, Decimal | float):
+        if value == 0:
+            return 0
+        
         if places > -1:
             value = round(value, places)
-        value = str(value).rstrip('0').rstrip('.')
+        
+        _num_value = value
 
-        return value if minus else value.lstrip('-')
+        value = str(value).rstrip('0').rstrip('.')
+        value = value if minus else value.lstrip('-')
+        value = f'+{value}' if plus and _num_value > 0 else value
 
     return value
 
 
 @register.filter
-def convert_currency_code(value: str) -> str:
+def convert_currency_code(value: str, in_symbol: bool = True) -> str:
     """
     The convert_currency_code filter is used to convert the
-    currency code to the appropriate currency symbol.
+    currency code to the appropriate currency symbol or text representation.
 
     Parameters:
-        -  value (str): The currency code that you want to convert to a symbol.
+        - value (str): The currency code that you want to convert to a symbol or text.
+        - in_symbol (bool, optional): Specifies whether to return the currency symbol.
+          If True, the function returns the currency symbol corresponding to the input code.
+          If False, the function returns the text representation of the currency code.
+          Defaults to True.
 
     Returns:
-        - str: The currency symbol corresponding to the input code.
-        If the currency code is missing from the currency_codes dictionary,
-        the original value is returned.
+        - str: The currency symbol or text corresponding to the input code.
+          If the currency code is missing from the currency codes dictionary,
+          the original value is returned.
     
     Usage example:
         - {{ currency_code|convert_currency_code }}
+          This will display the currency symbol corresponding to the currency code.
+        - {{ currency_code|convert_currency_code:False }}
+          This will display the text representation of the currency code.
     """
 
-    currency_codes = {
+    currency_codes_in_symbols = {
         'SUR': '₽',
     }
 
+    currency_codes_in_text = {
+        'SUR': 'RUB',
+    }
+
     if isinstance(value, str):
-        return currency_codes.get(value, value)
-        
+        if in_symbol:
+            return currency_codes_in_symbols.get(value, value)
+        return currency_codes_in_text.get(value, value)
+
     return value
