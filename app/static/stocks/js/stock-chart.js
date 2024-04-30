@@ -239,21 +239,30 @@ anychart.onDocumentReady(function () {
         calculateAndDrawPriceChange(e.firstSelected, e.lastSelected);
     });
 
-    const calculateAndDrawPriceChange = (startDateTime, endDateTime) => {
-        const dateTimeFormat = 'dd.MM.yyyy';
 
-        const getPriceInRange = (dateTime, step) => {
-            let price = null;
-            while (!price) {
-                const dateString = anychart.format.dateTime(dateTime, dateTimeFormat);
-                price = data.results.find(item => anychart.format.dateTime(item.start_time, dateTimeFormat) === dateString);
-                dateTime.setDate(dateTime.getDate() + step);
+    const calculateAndDrawPriceChange = (startDateTime, endDateTime) => {
+        const getPriceInDate = (dateTime) => {
+            let minDiff = Number.MAX_SAFE_INTEGER;
+            let closestIndex = -1;
+
+            for (let i = 0; i < data.results.length; i++) {
+                const item = data.results[i];
+                const itemDate = new Date(item.start_time);
+                const diff = Math.abs(dateTime - itemDate);
+
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestIndex = i;
+                }
             }
-            return price.close;
+
+            if (closestIndex !== -1) {
+                return data.results[closestIndex].close;
+            }
         };
 
-        const firstPrice = getPriceInRange(new Date(startDateTime), 1);
-        const lastPrice = getPriceInRange(new Date(endDateTime), -1);
+        const firstPrice = getPriceInDate(new Date(startDateTime));
+        const lastPrice = getPriceInDate(new Date(endDateTime));
 
         const priceChange = lastPrice - firstPrice;
         const percentChange = (priceChange / firstPrice) * 100;
