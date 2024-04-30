@@ -275,6 +275,10 @@ class Stock(models.Model):
 
 
 class BlacklistedStock(models.Model):
+    """
+    Represents a blacklisted stock.
+    """
+    
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, verbose_name='stock')
 
     class Meta:
