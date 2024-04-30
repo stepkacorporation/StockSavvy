@@ -41,9 +41,15 @@ class StockListView(ListView):
                 prevprice_default=Coalesce('prevprice', Value(0), output_field=DecimalField())
             ).order_by(f'{order}prevprice_default', 'shortname')
         elif sort_by == 'per_day':
-            queryset = queryset.order_by(f'{order}price_change__percent_per_day', 'shortname')
+            queryset = queryset.annotate(
+                percent_per_day_default=Coalesce('price_change__percent_per_day', Value(0), output_field=DecimalField())
+            ).order_by(f'{order}percent_per_day_default', 'shortname')
         elif sort_by == 'per_year':
-            queryset = queryset.order_by(f'{order}price_change__percent_per_year', 'shortname')
+            queryset = queryset.annotate(
+                percent_per_year_default=Coalesce(
+                    'price_change__percent_per_year', Value(0), output_field=DecimalField()
+                )
+            ).order_by(f'{order}percent_per_year_default', 'shortname')
 
         return queryset
     
