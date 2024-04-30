@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Stock, Candle, PriceChange, Favourite
+from .models import Stock, BlacklistedStock, Candle, PriceChange, Favourite
 
 
 @admin.register(Stock)
@@ -12,6 +12,17 @@ class StockAdmin(admin.ModelAdmin):
     list_display = ('ticker', 'shortname', 'prevprice', 'updated')
     search_fields = ('ticker', 'shortname',)
     list_filter = ('status',)
+
+
+@admin.register(BlacklistedStock)
+class BlacklistedStockAdmin(admin.ModelAdmin):
+    """
+    Admin panel for blacklisted stocks.
+    """
+
+    list_display = ('stock_id', 'stock')
+    search_fields = ('stock__ticker', 'stock__shortname')
+    autocomplete_fields = ('stock',)
 
 
 @admin.register(Candle)

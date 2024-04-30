@@ -7,6 +7,8 @@ from django.contrib.auth import get_user_model
 
 from datetime import timedelta
 
+from .managers import StockManager
+
 User = get_user_model()
 
 
@@ -197,6 +199,8 @@ class Stock(models.Model):
 
     updated = models.DateTimeField(auto_now=True, verbose_name='updated')
 
+    objects = StockManager()
+
     def __str__(self) -> str:
         return f'{self.shortname} ({self.ticker}) {self.prevprice} {self.currencyid}'
 
@@ -268,6 +272,17 @@ class Stock(models.Model):
     def get_last_candle_date(self):
         first_candle = self.candles.first()
         return first_candle.time_range.upper if first_candle else None
+
+
+class BlacklistedStock(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, verbose_name='stock')
+
+    class Meta:
+        verbose_name = 'Blacklisted Stock'
+        verbose_name_plural = 'Blacklisted Stocks'
+
+    def __str__(self):
+        return f'{self.stock.shortname} ({self.stock.ticker})'
 
 
 class Candle(models.Model):
