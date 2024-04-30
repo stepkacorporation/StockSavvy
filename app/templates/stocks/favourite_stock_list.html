@@ -1,0 +1,27 @@
+{% extends 'stocks/stock_list.html' %}
+
+{% block title %}StockSavvy - favourite stocks{% endblock title %}
+
+{% block stock_item %}
+
+    {% include "stocks/components/favourite_stock_item.html" %}
+
+{% endblock stock_item %}
+
+{% block no_stocks_text %}
+
+    <div class="text-center">
+        <p class="fs-5 mb-2">Your favorites list is empty.</p>
+        <a href="{% url 'stocks' %}">Add stocks</a>
+    </div>
+    
+{% endblock no_stocks_text %}
+
+{% block additional_info %}
+    
+    <div class="text-center empty-favorites-text" style="display: none;">
+        <p class="fs-5 mb-2">Your favorites list is empty.</p>
+        <a href="{% url 'stocks' %}">Add stocks</a>
+    </div>
+
+{% endblock additional_info %}

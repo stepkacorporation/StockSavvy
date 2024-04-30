@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ..models import Candle, Stock
+from ..models import Candle, Stock, Favourite
 
 
 class CandleSerializer(serializers.ModelSerializer):
@@ -16,4 +16,10 @@ class CandleSerializer(serializers.ModelSerializer):
 class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
+        fields = '__all__'
+
+
+class FavouriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favourite
         fields = '__all__'

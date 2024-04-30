@@ -1,33 +1,47 @@
+{% load static %}
 {% load formatting_filters %}
 
-<a href="{{ stock.get_absolute_url }}" class="list-group-item list-group-item-action">
-    <div class="row">
-        <div class="col">
-            <div>{{ stock.shortname }}</div>
-            <div class="small">{{ stock.ticker }}</div>
+<div class="position-relative stock-item-container">
+    {% if request.user.is_authenticated %}
+        <div class="image-container position-absolute top-50 translate-middle-y" style="left: -45px;">
+            {% static "icons/star-fill.svg" as star_fill_src %}
+            {% static "icons/star.svg" as star_src %}
+            {% if stock.ticker in favourite_stocks %}
+                {% include "stocks/components/star.html" with current_src=star_fill_src star_fill_src=star_fill_src classes="stock-item-star" styles="padding: 20px;" title="In Favorites" user_id=request.user.id stock_ticker=stock.ticker hide_on_delete=hide_on_delete %}
+            {% else %}
+                {% include "stocks/components/star.html" with current_src=star_src star_fill_src=star_fill_src classes="stock-item-star" styles="padding: 20px;" title="Add to Favorites" user_id=request.user.id stock_ticker=stock.ticker hide_on_delete=hide_on_delete %}
+            {% endif %}
         </div>
-        <div class="col text-end">{% normalize stock.prevprice %} {{ stock.currencyid|convert_currency_code }}</div>
+    {% endif %}
+    <a href="{{ stock.get_absolute_url }}" class="list-group-item list-group-item-action position-relative" style="margin-top: -1px;">
+        <div class="row">
+            <div class="col">
+                <div>{{ stock.shortname }}</div>
+                <div class="small">{{ stock.ticker }}</div>
+            </div>
+            <div class="col text-end">{% normalize stock.prevprice %} {{ stock.currencyid|convert_currency_code }}</div>
 
-        {% with value_per_day=stock.price_change.value_per_day percent_per_day=stock.price_change.percent_per_day %}
-            <div class="col text-end {% if value_per_day > 0 %}text-success{% elif value_per_day < 0 %}text-danger{% endif %}">
-                {% if not value_per_day and not percent_per_day %}
+            {% with value_per_day=stock.price_change.value_per_day percent_per_day=stock.price_change.percent_per_day %}
+                <div class="col text-end {% if value_per_day > 0 %}text-success{% elif value_per_day < 0 %}text-danger{% endif %}">
+                    {% if not value_per_day and not percent_per_day %}
+                        -
+                    {% else %}
+                        <div>{% if value_per_day > 0 %}+{% endif %}{% normalize value_per_day places=stock.decimals %} {{ stock.currencyid|convert_currency_code }}</div>
+                        <div class="small">{% normalize percent_per_day places=2 minus=False %} %</div>
+                    {% endif %}
+                </div>
+            {% endwith %}
+
+            {% with value_per_year=stock.price_change.value_per_year percent_per_year=stock.price_change.percent_per_year %}
+                <div class="col text-end {% if value_per_year > 0 %}text-success{% elif value_per_year < 0 %}text-danger{% endif %}">
+                    {% if not value_per_year and not percent_per_year %}
                     -
-                {% else %}
-                    <div>{% if value_per_day > 0 %}+{% endif %}{% normalize value_per_day places=stock.decimals %} {{ stock.currencyid|convert_currency_code }}</div>
-                    <div class="small">{% normalize percent_per_day places=2 minus=False %} %</div>
-                {% endif %}
-            </div>
-        {% endwith %}
-
-        {% with value_per_year=stock.price_change.value_per_year percent_per_year=stock.price_change.percent_per_year %}
-            <div class="col text-end {% if value_per_year > 0 %}text-success{% elif value_per_year < 0 %}text-danger{% endif %}">
-                {% if not value_per_year and not percent_per_year %}
-                -
-                {% else %}
-                    <div>{% if value_per_year > 0 %}+{% endif %}{% normalize value_per_year places=stock.decimals %} {{ stock.currencyid|convert_currency_code }}</div>
-                    <div class="small">{% normalize percent_per_year places=2 minus=False %} %</div>
-                {% endif %}
-            </div>
-        {% endwith %}
-    </div>
-</a>
+                    {% else %}
+                        <div>{% if value_per_year > 0 %}+{% endif %}{% normalize value_per_year places=stock.decimals %} {{ stock.currencyid|convert_currency_code }}</div>
+                        <div class="small">{% normalize percent_per_year places=2 minus=False %} %</div>
+                    {% endif %}
+                </div>
+            {% endwith %}
+        </div>
+    </a>
+</div>

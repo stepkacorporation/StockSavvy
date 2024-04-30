@@ -1,20 +1,38 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block title %}StockSavvy - stocks{% endblock title %}
 
-{% block header %}
+{% block head %}
+<style>
 
+.stock-item-container:hover .stock-item-star {
+    display: block;
+}
+.stock-item-star {
+    display: none;
+    cursor: pointer;
+}
+.stock-item-star:hover {
+    display: block;
+}
+
+</style>
+{% endblock head %}
+
+{% block header %}
+    
     {% include 'stocks/components/ticker_search.html' %}
 
 {% endblock header %}
 
 {% block content %}
-
     <div class="container">
         
         <div class="list-group mb-4">
             {% if stocks %}
-                <div class="list-group-item list-group-item-secondary">
+                <div class="list-group-item list-group-item-secondary header-container" style="user-select: none;">
                     <div class="row">
                         {% with current_sorting=request.GET.sort_by current_order=request.GET.order %}
                             <div class="col">
@@ -36,19 +54,24 @@
 
             {% for stock in stocks %}
             
-                {% include 'stocks/components/stock_item.html' %}
-
+                {% block stock_item %}
+                    {% include 'stocks/components/stock_item.html' %}
+                {% endblock stock_item %}
+            
             {% empty %}
 
-                <p class="text-center fs-5">
-                    {% if request.GET.query %}
-                        No stocks were found for your search.
-                    {% else %}
-                        There is no information about stocks.
-                    {% endif %}
-                </p>
+                {% if request.GET.query %}
+                    <p class="text-center fs-5">No stocks were found for your search.</p>
+                {% else %}
+                    {% block no_stocks_text %}
+                        <p class="text-center fs-5">There is no information about stocks.</p>
+                    {% endblock no_stocks_text %}
+                {% endif %}
 
             {% endfor %}
+
+            {% block additional_info %}
+            {% endblock additional_info %}
         </div>
 
         {% include 'pagination.html' %}

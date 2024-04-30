@@ -359,7 +359,7 @@ class Favourite(models.Model):
     """
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favourite_stocks', verbose_name='user')
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, verbose_name='stock')
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='users', verbose_name='stock')
 
     class Meta:
         verbose_name = 'Favourite'

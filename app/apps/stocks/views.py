@@ -2,8 +2,11 @@ from django.views.generic import ListView, DetailView
 from django.db.models import Q, Value, DecimalField
 from django.db.models.functions import Coalesce
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import resolve
 
 from .templatetags.formatting_filters import normalize, convert_currency_code
+from .utils.view_utils import add_favourite_stocks_to_context, set_no_cache
 
 from .models import Stock
 
@@ -54,6 +57,34 @@ class StockListView(ListView):
         params.pop('order', None)
 
         context['params'] = params.urlencode()
+
+        add_favourite_stocks_to_context(context, self.request.user)
+
+        current_url_name = resolve(self.request.path_info).url_name
+        context['current_page'] = current_url_name
+
+        return context
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        return set_no_cache(response)
+
+
+class FavouriteStockListView(LoginRequiredMixin, StockListView):
+    """
+    View class for displaying the list of favorite stocks for authenticated users only.
+    """
+    
+    paginate_by = None
+    template_name = 'stocks/favourite_stock_list.html'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(users__user=self.request.user)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['hide_on_delete'] = True
         return context
 
 
@@ -130,4 +161,10 @@ class StockDetailView(DetailView):
             'candles': stock_instance.candles,
         }
         
+        add_favourite_stocks_to_context(extra_context, self.request.user)
+
         return context | extra_context
+    
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        return set_no_cache(response)

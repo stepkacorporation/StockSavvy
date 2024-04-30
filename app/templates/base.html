@@ -16,13 +16,19 @@
         {% load django_bootstrap5 %}
         {% bootstrap_css %}
         {% bootstrap_javascript %}
-
+        
         {% block head %}
         {% endblock head %}
 
     </head>
 
     <body class="d-flex flex-column min-vh-100">
+
+        <div aria-live="polite" aria-atomic="true" class="position-relative">
+            <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3">
+                <!-- Toasts container -->
+            </div>
+        </div>
 
         <header>
             {% include "header.html" %}
@@ -43,6 +49,9 @@
         </footer>
 
         <script src="{% static 'common/js/axios.min.js' %}"></script>
+        <script src="{% static 'common/js/getCookie.js' %}"></script>
+        <script src="{% static "common/js/showToast.js" %}"></script>
+        <script src="{% static "stocks/js/add-or-remove-favourite.js" %}"></script>
         {% block scripts %}
         {% endblock scripts %}
     </body>
