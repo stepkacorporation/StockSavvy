@@ -49,7 +49,9 @@ def normalize(value: Decimal | float, places: int = -1, plus: bool = False, minu
         
         _num_value = value
 
-        value = str(value).rstrip('0').rstrip('.')
+        value = str(value)
+        if '.' in value:
+            value = value.rstrip('0').rstrip('.')
         value = value if minus else value.lstrip('-')
         value = f'+{value}' if plus and _num_value > 0 else value
 
