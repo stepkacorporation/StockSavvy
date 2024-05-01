@@ -241,7 +241,7 @@ anychart.onDocumentReady(function () {
 
 
     const calculateAndDrawPriceChange = (startDateTime, endDateTime) => {
-        const getPriceInDate = (dateTime) => {
+        const getCandleDataInDate = (dateTime) => {
             let minDiff = Number.MAX_SAFE_INTEGER;
             let closestIndex = -1;
 
@@ -257,12 +257,12 @@ anychart.onDocumentReady(function () {
             }
 
             if (closestIndex !== -1) {
-                return data.results[closestIndex].close;
+                return data.results[closestIndex];
             }
         };
 
-        const firstPrice = getPriceInDate(new Date(startDateTime));
-        const lastPrice = getPriceInDate(new Date(endDateTime));
+        const firstPrice = getCandleDataInDate(new Date(startDateTime)).open;
+        const lastPrice = getCandleDataInDate(new Date(endDateTime)).close;
 
         const priceChange = lastPrice - firstPrice;
         const percentChange = (priceChange / firstPrice) * 100;
