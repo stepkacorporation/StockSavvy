@@ -124,7 +124,7 @@ def calculate_price_change(stock: Stock, days: int) -> tuple[int | float, int | 
     
     tz_now = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     last_days = tz_now - timedelta(days=days)
-    candles_per_days = stock.candles.filter(time_range__overlap=[last_days - timedelta(days=1), tz_now + timedelta(days=1)]).order_by('time_range')
+    candles_per_days = stock.candles.filter(time_range__overlap=[last_days, tz_now + timedelta(days=1)]).order_by('time_range')
 
     if candles_per_days.exists():
         first_open = candles_per_days.first().open
