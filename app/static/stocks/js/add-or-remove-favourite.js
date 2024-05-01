@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             checkFavoritesList();
                         } else {
                             star.src = starSrc;
-                            star.title = "In Favorites";
+                            star.title = "Add to Favorites";
                         }
 
                         showToast(response.message, 'info');
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         const response = JSON.parse(xhr.responseText);
 
                         star.src = starFillSrc;
-                        star.title = "Add to Favourites";
+                        star.title = "In Favourites";
 
                         showToast(response.message, 'info');
                     } else {
