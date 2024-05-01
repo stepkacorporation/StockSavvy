@@ -35,17 +35,23 @@
                 <div class="list-group-item list-group-item-secondary header-container" style="user-select: none;">
                     <div class="row">
                         {% with current_sorting=request.GET.sort_by current_order=request.GET.order %}
-                            <div class="col">
+                            <div class="col d-none d-md-block">
                                 {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='name' current_order=current_order title='Name' %}
                             </div>
-                            <div class="col text-end">
+                            <div class="col small d-md-none">
+                                {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='name' current_order=current_order title='Name' %}
+                            </div>
+                            <div class="col text-end d-none d-md-block">
                                 {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='price' current_order=current_order title='Price' %}
                             </div>
-                            <div class="col text-end">
+                            <div class="col text-end d-none d-md-block">
                                 {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='per_day' current_order=current_order title='Per Day' %}
                             </div>
-                            <div class="col text-end">
+                            <div class="col text-end d-none d-md-block">
                                 {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='per_year' current_order=current_order title='Per Year' %}
+                            </div>
+                            <div class="col small text-end d-md-none">
+                                {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='per_year' current_order=current_order title='Price / Per Year' %}
                             </div>
                         {% endwith %}
                     </div>
@@ -78,3 +84,23 @@
     </div>
 
 {% endblock content %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        function setPaginationSize() {
+            const width = window.innerWidth;
+            const pagination = document.querySelector('.pagination');
+            pagination.classList.toggle("pagination-sm", width <= 576);
+        }
+        
+        setPaginationSize()
+        
+        window.addEventListener('resize', function () {
+            console.log('set pag')
+            setPaginationSize();
+        
+        });
+    });
+    </script>
+{% endblock scripts %}
