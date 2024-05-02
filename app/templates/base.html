@@ -8,14 +8,15 @@
 
         <title>{% block title %}{% endblock title %}</title>
         
+        <!-- AnyChart -->
         <script src="{% static "common/js/anychart-core.min.js" %}"></script>
         <script src="{% static "common/js/anychart-stock.min.js" %}"></script>
         <script src="{% static "common/js/anychart-ui.min.js" %}"></script>
         <link href="{% static "common/css/anychart-ui.min.css" %}" type="text/css" rel="stylesheet">
 
-        {% load django_bootstrap5 %}
-        {% bootstrap_css %}
-        {% bootstrap_javascript %}
+        <!-- Bootstrap -->
+        <link href="{% static "common/css/bootstrap.min.css" %}" type="text/css" rel="stylesheet">
+        <script src="{% static "common/js/bootstrap.bundle.min.js" %}"></script>
         
         {% block head %}
         {% endblock head %}

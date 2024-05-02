@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     
-    'django_bootstrap5',
     'crispy_forms',
     'crispy_bootstrap5',
 
