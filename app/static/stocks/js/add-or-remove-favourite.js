@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         } else {
                             star.src = starSrc;
                             star.title = "Add to Favorites";
+                            star.classList.remove("favourite");
                         }
 
                         showToast(response.message, 'info');
@@ -34,6 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         star.src = starFillSrc;
                         star.title = "In Favourites";
+                        star.classList.add("favourite");
 
                         showToast(response.message, 'info');
                     } else {

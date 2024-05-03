@@ -7,7 +7,7 @@
             {% static "icons/star-fill.svg" as star_fill_src %}
             {% static "icons/star.svg" as star_src %}
             {% if stock.ticker in favourite_stocks %}
-                {% include "stocks/components/star.html" with current_src=star_fill_src star_fill_src=star_fill_src classes="stock-item-star" styles="padding: 20px;" title="In Favorites" user_id=request.user.id stock_ticker=stock.ticker hide_on_delete=hide_on_delete %}
+                {% include "stocks/components/star.html" with current_src=star_fill_src star_fill_src=star_fill_src classes="stock-item-star favourite" styles="padding: 20px;" title="In Favorites" user_id=request.user.id stock_ticker=stock.ticker hide_on_delete=hide_on_delete %}
             {% else %}
                 {% include "stocks/components/star.html" with current_src=star_src star_fill_src=star_fill_src classes="stock-item-star" styles="padding: 20px;" title="Add to Favorites" user_id=request.user.id stock_ticker=stock.ticker hide_on_delete=hide_on_delete %}
             {% endif %}
