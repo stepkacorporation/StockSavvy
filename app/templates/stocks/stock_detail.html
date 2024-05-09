@@ -79,7 +79,7 @@
         <div class="col-md-4">
             <div class="card mb-lg-0 mb-4">
                 <div class="card-body">
-                    <p class="text-center mb-2"><small>The stock price on {{ price_update_date|default_if_none:"-" }}</small></p>
+                    <p class="text-center mb-2"><small>The stock price on <b>{{ price_update_date|default_if_none:"-" }}</b></small></p>
                     <h3 class="text-center mb-0">{{ last_stock_price|default_if_none:"-" }} {{ stock.currencyid|convert_currency_code }}</h3>
                 </div>
             </div>

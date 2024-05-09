@@ -31,6 +31,8 @@ urlpatterns = [
     path('stocks/', include('apps.stocks.urls')),
 
     path('api/', include(api_urlpatterns)),
+    
+    path("__debug__/", include("debug_toolbar.urls")),
 ] 
 
 if settings.DEBUG:

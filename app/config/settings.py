@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_extensions',
+    'debug_toolbar',
 
     'rest_framework',
     'corsheaders',
@@ -54,6 +55,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 
@@ -65,6 +68,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+INTERNAL_IPS = str(os.getenv('INTERNAL_IPS')).split()
 
 CORS_ALLOWED_ORIGINS = str(os.getenv('CORS_ALLOWED_ORIGINS')).split()
 
@@ -97,7 +102,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': str(os.getenv('DB_ENGINE')),
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': str(os.getenv('DB_NAME')),
         'USER': str(os.getenv('DB_USER')),
         'PASSWORD': str(os.getenv('DB_PASSWORD')),
@@ -154,6 +159,7 @@ AUTH_USER_MODEL = 'accounts.User'
 LOGIN_REDIRECT_URL = 'stocks'
 ACCOUNT_ACTIVATION_DAYS = 30
 
+# EMAIL
 EMAIL_HOST = str(os.getenv('EMAIL_HOST'))
 EMAIL_HOST_USER = str(os.getenv('EMAIL_HOST_USER'))
 EMAIL_HOST_PASSWORD = str(os.getenv('EMAIL_HOST_PASSWORD'))
@@ -161,13 +167,25 @@ EMAIL_PORT = str(os.getenv('EMAIL_PORT'))
 EMAIL_USE_TLS = str(os.getenv('EMAIL_USE_TLS', 'False')) == 'True'
 DEFAULT_FROM_EMAIL = str(os.getenv('DEFAULT_FROM_EMAIL'))
 
-REDIS_HOST = str(os.getenv('REDIS_HOST'))
-REDIS_PORT = str(os.getenv('REDIS_PORT'))
-BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+# ASYNC TASK
+REDIS_BROKER_HOST = str(os.getenv('REDIS_BROKER_HOST'))
+REDIS_BROKER_PORT = str(os.getenv('REDIS_BROKER_PORT'))
+BROKER_URL = 'redis://' + REDIS_BROKER_HOST + ':' + REDIS_BROKER_PORT + '/0'
 BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
-CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_RESULT_BACKEND = 'redis://' + REDIS_BROKER_HOST + ':' + REDIS_BROKER_PORT + '/0'
 CELERY_TIMEZONE = TIME_ZONE
 
+# CACHE
+REDIS_CACHE_HOST = str(os.getenv('REDIS_CACHE_HOST'))
+REDIS_CACHE_PORT = str(os.getenv('REDIS_CACHE_PORT'))
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://' + REDIS_CACHE_HOST + ':' + REDIS_CACHE_PORT + '/0',
+    }
+}
+
+# LOGGING
 LOGGING_DIR = BASE_DIR / '../logs'
 if not os.path.exists(LOGGING_DIR):
     os.makedirs(LOGGING_DIR)

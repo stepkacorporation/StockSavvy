@@ -41,7 +41,7 @@ class PriceChangeAdmin(admin.ModelAdmin):
     Admin panel for price changes.
     """
 
-    list_display = ('stock', 'value_per_day', 'value_per_year')
+    list_display = ('stock', 'value_per_day', 'value_per_year', 'updated')
     search_fields = ('stock__ticker',)
 
 

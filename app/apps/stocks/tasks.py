@@ -18,6 +18,7 @@ from .utils.task_utils import (
     calculate_price_change_per_year
 )
 from .models import Stock, Candle, PriceChange
+from .utils.cache_utils import clear_stock_cache
 
 logger = add_file_logger(get_task_logger(__name__))
 
@@ -38,6 +39,19 @@ def _log_execution_time(start_time: float, message: str) -> float:
     execution_time = perf_counter() - start_time
     logger.info(f'{message} {execution_time}s')
     return execution_time
+
+
+@app.task
+def _clear_stock_cache() -> None:
+    """
+    Task to clear the stock cache.
+
+    Returns:
+        - None
+    """
+    
+    clear_stock_cache()
+    logger.info('The stock cache has been successfully cleared')
 
 
 @app.task
@@ -65,6 +79,7 @@ def load_stock_data(update: bool = False) -> None:
         load_historical_data_func(),
         load_price_changes(),
         _log_execution_time.si(_start_time, _execution_message),
+        _clear_stock_cache.si(),
     ).apply_async()
 
 
