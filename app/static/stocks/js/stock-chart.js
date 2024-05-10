@@ -15,7 +15,7 @@ anychart.onDocumentReady(function () {
 
                 data = response.data;
                 const results = data.results.map(item => [
-                    item.start_time,
+                    item.end_time,
                     parseFloat(item.open),
                     parseFloat(item.high),
                     parseFloat(item.low),
