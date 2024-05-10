@@ -243,7 +243,7 @@ class Stock(models.Model):
         start_of_day = end_of_day - timedelta(days=1)
 
         today_candles = self.candles.filter(
-            time_range__overlap=[start_of_day, end_of_day]
+            time_range__overlap=[start_of_day, end_of_day + timedelta(days=1)]
         ).order_by('time_range')
         
         opening_price, closing_price = None, None
