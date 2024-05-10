@@ -18,7 +18,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Change the path to the environment variables file in production
-load_dotenv(BASE_DIR / '../.env.dev')
+load_dotenv(BASE_DIR / '../.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -72,6 +72,7 @@ MIDDLEWARE = [
 INTERNAL_IPS = str(os.getenv('INTERNAL_IPS')).split()
 
 CORS_ALLOWED_ORIGINS = str(os.getenv('CORS_ALLOWED_ORIGINS')).split()
+CSRF_TRUSTED_ORIGINS = str(os.getenv('CSRF_TRUSTED_ORIGINS')).split()
 
 ROOT_URLCONF = 'config.urls'
 

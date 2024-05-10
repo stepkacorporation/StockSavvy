@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+
+  django:
+    build: ./app
+    container_name: django
+    command: sh -c "python manage.py collectstatic --no-input && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./app/:/usr/src/app/
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+      - redis_cache
+      - redis_broker
+      - celery_worker
+      - celery_beat
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB={DB_NAME}
+
+  redis_broker:
+    image: redis:6
+    container_name: redis_broker
+    ports:
+      - 6379:6379
+
+  redis_cache:
+    image: redis:6
+    container_name: redis_cache
+    ports:
+      - 6380:6379
+
+  celery_worker:
+    build: ./app
+    container_name: celery_worker
+    restart: always
+    command: celery -A config worker -l info
+    depends_on:
+      - redis_broker
+    env_file:
+      - ./.env
+
+  celery_beat:
+    build: ./app
+    container_name: celery_beat
+    command: celery -A config beat -l info
+    depends_on:
+      - redis_broker
+    env_file:
+      - ./.env
+
+volumes:
+  postgres_data:
