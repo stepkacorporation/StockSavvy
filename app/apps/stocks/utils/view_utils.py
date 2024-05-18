@@ -64,7 +64,10 @@ def get_price_info(stock: Stock, decimals: int, currency: str, per: str = 'day')
 
     normalized_value, normalized_percent, change = None, None, None
     
-    stock_price_change: PriceChange = stock.price_change
+    try:
+        stock_price_change: PriceChange = stock.price_change
+    except ObjectDoesNotExist:
+        return 0, 0, change
 
     days_offset = (365, 1)[per == 'day'] 
     updated_date = stock_price_change.updated.replace(hour=0, minute=0, second=0, microsecond=0)

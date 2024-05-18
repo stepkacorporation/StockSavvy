@@ -3,21 +3,31 @@ version: '3.8'
 services:
 
   django:
-    build: ./app
+    build: 
+      context: ./app
+      dockerfile: Dockerfile.prod
     container_name: django
-    command: sh -c "python manage.py collectstatic --no-input && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py collectstatic --no-input && python manage.py makemigrations && python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
     volumes:
-      - ./app/:/usr/src/app/
-    ports:
-      - 8000:8000
+      - static_volume:/home/app/django/static
     env_file:
-      - ./.env
+      - ./.env.prod
     depends_on:
       - postgres
       - redis_cache
       - redis_broker
       - celery_worker
       - celery_beat
+
+  nginx:
+      build: ./nginx
+      container_name: nginx
+      volumes:
+      - static_volume:/home/app/django/static
+      ports:
+        - 80:80
+      depends_on:
+        - django
 
   postgres:
     image: postgres:15
@@ -51,7 +61,7 @@ services:
       - redis_broker
       - postgres
     env_file:
-      - ./.env
+      - ./.env.prod
 
   celery_beat:
     build: ./app
@@ -61,7 +71,8 @@ services:
       - redis_broker
       - postgres
     env_file:
-      - ./.env
+      - ./.env.prod
 
 volumes:
   postgres_data:
+  static_volume:
