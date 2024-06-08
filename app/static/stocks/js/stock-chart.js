@@ -63,7 +63,7 @@ anychart.onDocumentReady(function () {
     rangeSelector.render(rangeSelectorContainer);
 
     rangeSelectorContainer.addEventListener("click", function (e) {
-        var selectedRange = chart.getSelectedRange();
+        const selectedRange = chart.getSelectedRange();
         calculateAndDrawPriceChange(selectedRange.firstSelected, selectedRange.lastSelected);
     });
 

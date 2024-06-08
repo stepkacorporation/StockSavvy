@@ -94,7 +94,9 @@
         function setPaginationSize() {
             const width = window.innerWidth;
             const pagination = document.querySelector('.pagination');
-            pagination.classList.toggle("pagination-sm", width <= 576);
+            if (pagination) {
+                pagination.classList.toggle("pagination-sm", width <= 576);
+            }
         }
         
         setPaginationSize()

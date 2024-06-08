@@ -59,16 +59,16 @@
                         <label class="form-check-label" for="emaSwitch" >EMA</label>
                     </div>
                 </div>
-                <div class="col-12" style="height: 400px;">
+                <div class="col-12" style="height: 400px; position: relative;">
                     <div id="stock-chart" class="h-100 position-relative">
-                        <div class="text-center position-absolute top-50 start-50 translate-middle">
+                        <div class="text-center position-absolute top-50 start-50 translate-middle" style="z-index: 1;">
                             <div id="no-data" style="display: none;">There is no data available.</div>
                             <div id="chart-spinner" class="spinner-border text-secondary" role="status">
-                              <span class="visually-hidden">Загрузка...</span>
+                                <span class="visually-hidden">Загрузка...</span>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>                
                 <div class="row justify-content-between mb-3">
                     <div id="rangeSelectorContainer" class="col-sm-auto order-lg-2 mb-lg-0 mb-2"></div>
                     <div id="rangePickerContainer" class="col-sm-auto order-lg-1"></div>
