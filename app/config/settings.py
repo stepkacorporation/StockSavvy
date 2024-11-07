@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'apps.landing.apps.LandingConfig',
     'apps.accounts.apps.AccountsConfig',
     'apps.stocks.apps.StocksConfig',
 ]
