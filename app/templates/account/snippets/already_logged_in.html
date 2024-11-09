@@ -1,0 +1,7 @@
+{% load i18n %}
+{% load account %}
+
+{% user_display user as user_display %}
+<p><strong>Примечание:</strong> вы уже вошли в систему как
+    <a href="{% url 'account_settings' %}">{{ user_display }}</a>
+</p>

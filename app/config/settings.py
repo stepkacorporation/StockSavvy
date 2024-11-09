@@ -17,6 +17,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.yandex',
+
     'apps.landing.apps.LandingConfig',
     'apps.accounts.apps.AccountsConfig',
     'apps.stocks.apps.StocksConfig',
@@ -30,6 +36,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -78,7 +86,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 
@@ -93,6 +101,58 @@ STATICFILES_DIRS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
+ACCOUNT_MAX_EMAIL_ADDRESSES = 1
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_FORMS = {
+    'signup': 'apps.accounts.forms.CustomSignupForm',
+    'login': 'apps.accounts.forms.CustomLoginForm',
+}
+
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'account_login'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = settings.EMAIL_HOST
+EMAIL_PORT = settings.EMAIL_PORT
+EMAIL_USE_TLS = settings.EMAIL_USE_TLS
+EMAIL_HOST_USER = settings.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = settings.EMAIL_HOST_PASSWORD
+DEFAULT_FROM_EMAIL = settings.DEFAULT_FROM_EMAIL
+
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_ADAPTER = 'apps.accounts.adapters.CustomSocialAccountAdapter'
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APPS': [
+            {
+                'client_id': settings.GOOGLE_CLIENT_ID,
+                'secret': settings.GOOGLE_SECRET,
+                'key': ''
+            },
+        ],
+    },
+    'yandex': {
+        'APPS': [
+            {
+                'client_id': settings.YANDEX_CLIENT_ID,
+                'secret': settings.YANDEX_SECRET,
+                'key': ''
+            },
+        ],
+    },
+}
 
 if DEBUG:
     INSTALLED_APPS += ['debug_toolbar']

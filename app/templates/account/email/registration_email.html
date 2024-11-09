@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация на StockSavvy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Регистрация на StockSavvy</h1>
+        <p>Здравствуйте!</p>
+        <p>Вы успешно зарегистрировались на сайте stocksavvy.ru</p>
+
+        <p>Ваши данные для входа:</p>
+        <p><strong>Имя пользователя:</strong> {{ username }}</p>
+        <p><strong>E-mail:</strong> {{ email }}</p>
+        <p><strong>Пароль:</strong> {{ password }}</p>
+
+        <hr>
+
+        <div class="footer">
+            <p>С уважением, команда StockSavvy</p>
+        </div>
+    </div>
+</body>
+</html>

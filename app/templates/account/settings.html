@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Настройки | MakeResume
+{% endblock %}
+
+{% block header %}
+    {% include 'empty_header.html' %}
+{% endblock header %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <!-- Общий контейнер для обеих форм -->
+        <div class="col-lg-6 mb-5">
+
+            {% include 'account/snippets/messages.html' %}
+
+            {% if profile_form.errors or password_form.errors or set_password_form.errors %}
+                <div class="alert alert-danger">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    Пожалуйста, проверьте данные и исправьте ошибки перед сохранением
+                </div>
+            {% endif %}
+
+            <!-- Форма редактирования личных данных -->
+            <div class="card mb-4">
+                <div class="card-header fw-bold fs-5">Личные данные</div>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {% csrf_token %}
+
+                        <!-- Имя и Фамилия в одной строке на больших экранах -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ profile_form.first_name|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ profile_form.last_name|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <!-- Логин и Email в одной строке на больших экранах -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ profile_form.username|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ profile_form.email|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <button type="submit" name="profile_form" class="btn btn-primary w-100">Сохранить</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Форма смены пароля -->
+            {% if password_form %}
+                <div class="card">
+                    <div class="card-header fw-bold fs-5">Сменить пароль</div>
+                    <div class="card-body">
+                        <form method="POST" action="">
+                            {% csrf_token %}
+                            {{ password_form|crispy }}
+                            <button type="submit" name="password_form" class="btn btn-primary w-100">Сохранить</button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Форма добавления пароля -->
+            {% if set_password_form %}
+                <div class="card">
+                    <div class="card-header fw-bold fs-5">Добавить вход по паролю</div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            Вы можете установить пароль для своего аккаунта, чтобы в будущем у вас была возможность
+                            входить не только через социальные сети, но и напрямую с использованием пароля.
+                            Это обеспечит вам больше гибкости в доступе к своему профилю.
+                        </p>
+                        <form method="POST" action="">
+                            {% csrf_token %}
+                            {{ set_password_form|crispy }}
+                            <button type="submit" name="set_password_form" class="btn btn-primary w-100">Установить пароль</button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+{% include 'empty_footer.html' %}
+{% endblock %}

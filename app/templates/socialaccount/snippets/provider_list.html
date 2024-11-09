@@ -1,0 +1,20 @@
+{% load allauth socialaccount %}
+{% get_providers as socialaccount_providers %}
+{% if socialaccount_providers %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for provider in socialaccount_providers %}
+            <form method="POST" action="{% provider_login_url provider process=process scope=scope auth_params=auth_params %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline w-full flex items-center justify-center gap-2">
+                    {% if provider.id == "google" %}
+                        <i class="fa-brands fa-google"></i>
+                    {% elif provider.id == "yandex" %}
+                        <!-- Иконка Yandex -->
+                        <i class="fa-brands fa-yandex"></i>
+                    {% endif %}
+                    <span>Войти через {{ provider.name }}</span>
+                </button>
+            </form>
+        {% endfor %}
+    </div>
+{% endif %}

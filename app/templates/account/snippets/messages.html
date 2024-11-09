@@ -1,0 +1,16 @@
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert shadow-lg my-3 {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% elif message.tags == 'info' %}alert-info{% else %}alert{% endif %}">
+            <div>
+                {% if message.tags == 'success' %}
+                    <i class="fa-solid fa-check-circle text-xl mr-2"></i>
+                {% elif message.tags == 'error' %}
+                    <i class="fa-solid fa-exclamation-triangle text-xl mr-2"></i>
+                {% elif message.tags == 'info' %}
+                    <i class="fa-solid fa-info-circle text-xl mr-2"></i>
+                {% endif %}
+                <span>{{ message }}</span>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
