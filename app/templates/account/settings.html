@@ -1,18 +1,12 @@
 {% extends "base.html" %}
 
-{% load crispy_forms_tags %}
-
 {% block title %}
     Настройки | MakeResume
 {% endblock %}
 
-{% block header %}
-    {% include 'empty_header.html' %}
-{% endblock header %}
-
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
+<div class="flex items-center justify-center min-h-[90vh]">
+    <div class="max-w-md mx-auto w-full px-4 py-5">
         <!-- Общий контейнер для обеих форм -->
         <div class="col-lg-6 mb-5">
 
@@ -34,25 +28,27 @@
 
                         <!-- Имя и Фамилия в одной строке на больших экранах -->
                         <div class="row">
-                            <div class="col-md-6">
-                                {{ profile_form.first_name|as_crispy_field }}
+                            <div class="col-md-6 mb-4">
+                                {% include 'account/snippets/form_input.html' with input_type="text" input_name="first_name" label_text="Имя" %}
                             </div>
-                            <div class="col-md-6">
-                                {{ profile_form.last_name|as_crispy_field }}
+                            <div class="col-md-6 mb-4">
+                                {% include 'account/snippets/form_input.html' with input_type="text" input_name="last_name" label_text="Фамилия" %}
                             </div>
                         </div>
 
                         <!-- Логин и Email в одной строке на больших экранах -->
                         <div class="row">
-                            <div class="col-md-6">
-                                {{ profile_form.username|as_crispy_field }}
+                            <div class="col-md-6 mb-4">
+                                {% include 'account/snippets/form_input.html' with input_type="text" input_name="username" label_text="Имя пользователя" %}
                             </div>
-                            <div class="col-md-6">
-                                {{ profile_form.email|as_crispy_field }}
+                            <div class="col-md-6 mb-4">
+                                {% include 'account/snippets/form_input.html' with input_type="email" input_name="email" label_text="Email" %}
                             </div>
                         </div>
 
-                        <button type="submit" name="profile_form" class="btn btn-primary w-100">Сохранить</button>
+                        <div class="text-center">
+                            <button type="submit" name="profile_form" class="btn btn-primary w-1/2">Сохранить</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -64,8 +60,10 @@
                     <div class="card-body">
                         <form method="POST" action="">
                             {% csrf_token %}
-                            {{ password_form|crispy }}
-                            <button type="submit" name="password_form" class="btn btn-primary w-100">Сохранить</button>
+                            {% include 'account/snippets/form_input.html' with input_type="password" input_name="password" label_text="Новый пароль" %}
+                            <div class="text-center">
+                                <button type="submit" name="password_form" class="btn btn-primary w-1/2">Сохранить</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -83,8 +81,10 @@
                         </p>
                         <form method="POST" action="">
                             {% csrf_token %}
-                            {{ set_password_form|crispy }}
-                            <button type="submit" name="set_password_form" class="btn btn-primary w-100">Установить пароль</button>
+                            {% include 'account/snippets/form_input.html' with input_type="password" input_name="password" label_text="Новый пароль" %}
+                            <div class="text-center">
+                                <button type="submit" name="set_password_form" class="btn btn-primary w-1/2">Установить пароль</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -92,8 +92,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block footer %}
-{% include 'empty_footer.html' %}
 {% endblock %}

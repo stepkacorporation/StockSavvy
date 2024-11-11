@@ -27,6 +27,18 @@ class CustomLoginForm(LoginForm):
 
 
 class UserProfileForm(forms.ModelForm):
+    first_name = forms.CharField(
+        label='Имя',
+        widget=forms.TextInput(),
+        required=False
+    )
+
+    last_name = forms.CharField(
+        label='Фамилия',
+        widget=forms.TextInput(),
+        required=False
+    )
+
     username = forms.CharField(
         label='Имя пользователя',
         widget=forms.TextInput(),
@@ -45,4 +57,4 @@ class UserProfileForm(forms.ModelForm):
 
     class Meta:
         model = get_user_model()
-        fields = ('username', 'email')
+        fields = ('first_name', 'last_name', 'username', 'email')
