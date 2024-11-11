@@ -10,21 +10,7 @@
     <div class="max-w-md mx-auto w-full px-4 py-5">
 
         {% include 'account/snippets/messages.html' %}
-
-        <!-- Обработка ошибок -->
-        {% if form.errors %}
-            <div class="alert alert-error mb-3 flex items-center">
-                <i class="fa-solid fa-exclamation-triangle text-xl"></i>
-                <div>
-                    {% for field, errors in form.errors.items %}
-                        {% if errors %}
-                            <span>{{ errors.0 }}</span>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
-
+        {% include 'account/snippets/error_message.html' %}
 
         <h1 class="text-2xl font-bold mb-5 text-center">Войдите в аккаунт</h1>
 
@@ -36,38 +22,8 @@
         <form method="post" action="{% url 'account_login' %}">
             {% csrf_token %}
 
-            <div class="relative z-0 w-full mb-5 group">
-                <!-- Поле для имени пользователя или email -->
-                <input
-                    type="text"
-                    name="login"
-                    id="login"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 focus:outline-none focus:ring-0 focus:border-primary peer"
-                    placeholder=" "
-                    required
-                />
-                <label for="login"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                    Имя пользователя или Email
-                </label>
-            </div>
-
-            <div class="relative z-0 w-full mb-5 group">
-                <!-- Поле для пароля -->
-                <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 focus:outline-none focus:ring-0 focus:border-primary peer"
-                    placeholder=" "
-                    required
-                />
-                <label for="password"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                    Пароль
-                </label>
-            </div>
-
+            {% include 'account/snippets/form_input.html' with input_type="text" input_name="login" label_text="Имя пользователя или Email" %}
+            {% include 'account/snippets/form_input.html' with input_type="password" input_name="password" label_text="Пароль" %}
 
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center">
@@ -82,7 +38,6 @@
             </div>
         </form>
 
-        <!-- Ссылка на регистрацию -->
         <div class="text-center text-sm mb-3">
             Нет аккаунта? <a href="{% url 'account_signup' %}" class="link link-primary">Зарегистрируйтесь</a>
         </div>

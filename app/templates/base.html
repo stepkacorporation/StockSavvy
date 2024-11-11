@@ -9,6 +9,8 @@
 
     <title>{% block title %}StockSavvy{% endblock %}</title>
 
+    <!-- Применяем сохраненную тему перед загрузкой других скриптов -->
+    <script src="{% static 'js/themeToggle.js' %}"></script>
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
 
     <!-- Подключение Font Awesome -->
@@ -26,7 +28,6 @@
 
     {% include 'footer.html' %}
 
-    <script src="{% static 'js/themeToggle.js' %}"></script>
     <script src="{% static 'js/footer.js' %}"></script>
 
 </body>

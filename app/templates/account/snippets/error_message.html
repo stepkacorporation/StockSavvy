@@ -1,0 +1,12 @@
+{% if form.errors %}
+    <div class="alert alert-error mb-3 flex items-center">
+        <i class="fa-solid fa-exclamation-triangle text-xl"></i>
+        <div>
+            {% for field, errors in form.errors.items %}
+                {% if errors %}
+                    <span>{{ errors.0 }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
