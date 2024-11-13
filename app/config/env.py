@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     EMAIL_HOST_PASSWORD: str
     DEFAULT_FROM_EMAIL: str
 
+    CELERY_BROKER_URL: str
+    CELERY_RESULT_BACKEND: str
+
     GOOGLE_CLIENT_ID: str
     GOOGLE_SECRET: str
 

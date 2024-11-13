@@ -3,10 +3,9 @@ FROM python:3.12
 # Устанавливаем необходимые переменные окружения
 ENV HOME=/home \
     APP_HOME=/home/app \
-    PYTHONPATH="$PYTHONPATH:$HOME" \
+    PYTHONPATH="/home/app:$PYTHONPATH" \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=true
+    PYTHONUNBUFFERED=1
 
 # Создаем рабочую директорию
 RUN mkdir -p $APP_HOME \

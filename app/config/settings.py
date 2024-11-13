@@ -1,4 +1,7 @@
+import sys
 from pathlib import Path
+
+from loguru import logger
 
 from .env import settings, DEBUG
 
@@ -7,7 +10,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = settings.SECRET_KEY
 
 ALLOWED_HOSTS = settings.ALLOWED_HOSTS
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -88,7 +90,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -154,7 +156,21 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
+CELERY_BROKER_URL = settings.CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = settings.CELERY_RESULT_BACKEND
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+logger.remove()
+
 if DEBUG:
     INSTALLED_APPS += ['debug_toolbar']
     MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
     DEBUG_TOOLBAR_CONFIG = {'SHOW_TOOLBAR_CALLBACK': lambda request: True}
+
+    logger.add(sys.stdout, level='DEBUG')
+    logger.add('app/logs/django.log', level='DEBUG', rotation='10 MB', retention='7 days', compression='zip')
+else:
+    logger.add(sys.stdout, level='ERROR')
+    logger.add('app/logs/django.log', level='ERROR', rotation='10 MB', retention='7 days', compression='zip')
