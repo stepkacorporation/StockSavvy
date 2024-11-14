@@ -124,5 +124,3 @@ def get_price_range(stock: Stock, decimals: int, currency: str, per: str = 'day'
         price_range = f'{normalized_min_price} {currency} - {normalized_max_price} {currency}'
 
     return price_range
-
-

@@ -10,7 +10,7 @@
 # ./scripts/dev/createsuperuser.sh --default
 
 if [[ "$1" == "--default" ]]; then
-  docker-compose -f ./docker/dev/docker-compose.yml exec web python manage.py create_default_superuser
+  docker-compose -f ./docker/dev/docker-compose.yml exec web python app/manage.py create_default_superuser
 else
-  winpty docker-compose -f ./docker/dev/docker-compose.yml exec web python manage.py createsuperuser "$@"
+  winpty docker-compose -f ./docker/dev/docker-compose.yml exec web python app/manage.py createsuperuser "$@"
 fi
