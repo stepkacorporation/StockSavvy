@@ -1,0 +1,14 @@
+<form class="flex items-center mb-5" method="GET" autocomplete="off">
+    <input
+        class="input input-bordered mr-2 w-full"
+        type="search"
+        name="query"
+        value="{{ request.GET.query }}"
+        placeholder="Название или тикер"
+        aria-label="Название или тикер">
+    <button
+        class="btn btn-outline"
+        type="submit">
+        Найти
+    </button>
+</form>

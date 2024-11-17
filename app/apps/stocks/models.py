@@ -1,8 +1,21 @@
+from datetime import timedelta, datetime
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import DateTimeRangeField
+from django.core.cache import cache
 from django.db import models
+from django.db.models import Min, Max
+from django.urls import reverse
+from django.utils import timezone
 
 from .managers import StockManager
+from .utils.cache_keys import (
+    DEFAULT_TIMEOUT,
+    LAST_PRICE_KEY,
+    LAST_CANDLE_DATE_KEY,
+    OPENING_CLOSING_PRICE_TODAY_KEY,
+)
 
 User = get_user_model()
 
@@ -153,6 +166,108 @@ class Stock(models.Model):
         if self.ticker:
             self.ticker = self.ticker.upper()
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('stock-detail', kwargs={'ticker': self.ticker})
+
+    def get_opening_and_closing_price_today(self) -> tuple[Decimal, Decimal]:
+        """
+        Retrieves the opening and closing prices for today's candles.
+
+        Returns:
+            - tuple: A tuple containing the opening price and closing price for today.
+        """
+
+        cache_key = OPENING_CLOSING_PRICE_TODAY_KEY.format(ticker=self.ticker)
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return cached_data
+
+        end_of_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        start_of_day = end_of_day - timedelta(days=1)
+
+        today_candles = self.candles.filter(
+            time_range__overlap=[start_of_day, end_of_day + timedelta(days=1)]
+        ).order_by('time_range')
+
+        opening_price, closing_price = None, None
+
+        if today_candles.exists():
+            opening_price = today_candles.first().open
+            closing_price = today_candles.last().close
+
+        cache.set(cache_key, (opening_price, closing_price), timeout=DEFAULT_TIMEOUT)
+
+        return opening_price, closing_price
+
+    def get_price_range(self, days_offset: int, cache_key: str) -> tuple[Decimal, Decimal]:
+        """
+        Retrieves the price range for a specified number of days.
+
+        Args:
+            - days_offset (int): The number of days to consider for the price range.
+            - cache_key (str): The key to cache the data.
+
+        Returns:
+            - tuple: A tuple containing the minimum price and maximum price for the specified range of days.
+        """
+
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return cached_data
+
+        end_of_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        start_of_day = end_of_day - timedelta(days=1)
+
+        today_candles = self.candles.filter(
+            time_range__overlap=[start_of_day - timedelta(days=days_offset), end_of_day + timedelta(days=1)]
+        ).order_by('time_range')
+
+        min_price, max_price = None, None
+
+        if today_candles.exists():
+            min_price = today_candles.aggregate(min_price=Min('low'))['min_price']
+            max_price = today_candles.aggregate(max_price=Max('high'))['max_price']
+
+        cache.set(cache_key, (min_price, max_price), timeout=DEFAULT_TIMEOUT)
+
+        return min_price, max_price
+
+    def get_last_price(self) -> Decimal:
+        """
+        Retrieves the last price available.
+
+        Returns:
+            - Decimal: The last price available.
+        """
+
+        cache_key = LAST_PRICE_KEY.format(ticker=self.ticker)
+        cached_price = cache.get(cache_key)
+        if cached_price is not None:
+            return cached_price
+
+        first_candle = self.candles.first()
+        price = first_candle.close if first_candle else None
+        cache.set(cache_key, price, timeout=DEFAULT_TIMEOUT)
+        return price
+
+    def get_last_candle_date(self) -> datetime:
+        """
+        Retrieves the date of the last candle.
+
+        Returns:
+            - datetime: The date of the last candle.
+        """
+
+        cache_key = LAST_CANDLE_DATE_KEY.format(ticker=self.ticker)
+        cached_date = cache.get(cache_key)
+        if cached_date is not None:
+            return cached_date
+
+        first_candle = self.candles.first()
+        date = first_candle.time_range.upper if first_candle else None
+        cache.set(cache_key, date, timeout=DEFAULT_TIMEOUT)
+        return date
 
 
 class BlacklistedStock(models.Model):

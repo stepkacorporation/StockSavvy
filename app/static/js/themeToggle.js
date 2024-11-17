@@ -17,7 +17,7 @@ const updateUI = (theme) => {
 // Функция для переключения темы
 const toggleTheme = () => {
     const currentTheme = document.documentElement.getAttribute("data-theme");
-    const newTheme = currentTheme === "dim" ? "light" : "dim";
+    const newTheme = currentTheme === "dim" ? "emerald" : "dim";
     document.documentElement.setAttribute("data-theme", newTheme);
     localStorage.setItem("theme", newTheme);
     updateUI(newTheme);

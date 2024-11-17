@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load formatting_filters %}
+
+{% block title %}StockSavvy - {{ stock.shortname }} ({{ stock.ticker }}){% endblock title %}
+
+{% block head %}
+<style>
+
+.anychart-plot-controls, .anychart-credits {
+    display: none;
+}
+
+.stock-item-star {
+    cursor: pointer;
+}
+    
+</style>
+{% endblock head %}
+
+{% block content %}
+
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>{{ stock.shortname }} <sup><small class="text-muted">{{ stock.ticker }}</small></sup></h3>
+                {% if request.user.is_authenticated %}
+                    <div>
+                        {% static "icons/star-fill.svg" as star_fill_src %}
+                        {% static "icons/star.svg" as star_src %}
+                        {% if stock.ticker in favourite_stocks %}
+                            {% include "stocks/components/star.html" with current_src=star_fill_src star_fill_src=star_fill_src classes="stock-item-star me-4" styles="width: 30px; height: 30px;" title="In Favorites" user_id=request.user.id stock_ticker=stock.ticker %}
+                        {% else %}
+                            {% include "stocks/components/star.html" with current_src=star_src star_fill_src=star_fill_src classes="stock-item-star me-4" styles="width: 30px; height: 30px;" title="Add to Favorites" user_id=request.user.id stock_ticker=stock.ticker %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <hr>
+
+            <div class="row">
+                <div id="chart-controls" class="col col-auto d-flex align-items-center d-none">
+                    <select id="chart-type" class="form-select form-select-sm mb-1" aria-label=".form-select-sm">
+                        <option value="candlestick" selected>Candlestick</option>
+                        <option value="ohlc">OHLC</option>
+                        <option value="line">Line</option>
+                        <option value="area">Area</option>
+                        <option value="stepLine">Step Line</option>
+                        <option value="stepArea">Step Area</option>
+                        <option value="stick">Stick</option>
+                        <option value="rangeSplineArea">Range Spline Area</option>
+                        <option value="hilo">Hilo</option>
+                    </select>
+                    <div class="form-check form-switch ms-2" title="Exponential Moving Average">
+                        <input class="form-check-input" type="checkbox" id="emaSwitch">
+                        <label class="form-check-label" for="emaSwitch" >EMA</label>
+                    </div>
+                </div>
+                <div class="col-12" style="height: 400px; position: relative;">
+                    <div id="stock-chart" class="h-100 position-relative">
+                        <div class="text-center position-absolute top-50 start-50 translate-middle" style="z-index: 1;">
+                            <div id="no-data" style="display: none;">There is no data available.</div>
+                            <div id="chart-spinner" class="spinner-border text-secondary" role="status">
+                                <span class="visually-hidden">Загрузка...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>                
+                <div class="row justify-content-between mb-3">
+                    <div id="rangeSelectorContainer" class="col-sm-auto order-lg-2 mb-lg-0 mb-2"></div>
+                    <div id="rangePickerContainer" class="col-sm-auto order-lg-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-lg-0 mb-4">
+                <div class="card-body">
+                    <p class="text-center mb-2"><small>The stock price on <b>{{ price_update_date|default_if_none:"-" }}</b></small></p>
+                    <h3 class="text-center mb-0">{{ last_stock_price|default_if_none:"-" }} {{ stock.currencyid|convert_currency_code }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <h4 class="mb-4">Stock Indicators</h4>
+            
+            <ul class="nav nav-tabs" id="stockInfoTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="trading-data-tab" data-bs-toggle="tab" data-bs-target="#trading-data" type="button" role="tab" aria-controls="trading-data" aria-selected="true">Trading Data</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="stock-parameters-tab" data-bs-toggle="tab" data-bs-target="#stock-parameters" type="button" role="tab" aria-controls="stock-parameters" aria-selected="false">Stock Parameters</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="stockInfoTabContent">
+                <div class="tab-pane fade show active" id="trading-data" role="tabpanel" aria-labelledby="trading-data-tab">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            {% include "stocks/components/info_item.html" with name="Opening price" value=opening_price %}
+                        </div>
+                        <div class="col-lg-6">
+                            {% include "stocks/components/info_item.html" with name="Closing price" value=closing_price %}
+                        </div>
+                        <div class="col-lg-6 {% if value_per_day > 0 %}text-success{% elif value_per_day < 0 %}text-danger{% endif %}">
+                            {% include "stocks/components/info_item.html" with name="Change per day" value=change_per_day %}
+                        </div>
+                        <div class="col-lg-6">
+                            {% include "stocks/components/info_item.html" with name="Daily range" value=daily_price_range %}
+                        </div>
+                        <div class="col-lg-6 {% if value_per_year > 0 %}text-success{% elif value_per_year < 0 %}text-danger{% endif %}">
+                            {% include "stocks/components/info_item.html" with name="Change per year" value=change_per_year %}
+                        </div>
+                        <div class="col-lg-6">
+                            {% include "stocks/components/info_item.html" with name="Yearly range" value=yearly_price_range %}
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="stock-parameters" role="tabpanel" aria-labelledby="stock-parameters-tab">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            {% include "stocks/components/info_item.html" with name="Stock code" value=stock.ticker %}
+                        </div>
+                        <div class="col-lg-6">
+                            {% include "stocks/components/info_item.html" with name="Lot size" value=lot_size %}
+                        </div>
+                        <div class="col-lg-6">
+                            {% include "stocks/components/info_item.html" with name="ISIN code" value=stock.isin %}
+                        </div>
+                        <div class="col-lg-6">
+                            {% include "stocks/components/info_item.html" with name="Trading currency" value=stock.currencyid|convert_currency_code:False %}
+                        </div>
+                        <div class="col-lg-6">
+                            {% include "stocks/components/info_item.html" with name="Issue size" value=stock.issuesize %}
+                        </div>
+                        <div class="col-lg-6">
+                            {% include "stocks/components/info_item.html" with name="List level" value=stock.listlevel %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    const stockTicker = "{{ stock.ticker }}";
+    const decimals = "{{ stock.decimals }}";
+</script>
+<script src="{% static "stocks/js/stock-chart.js" %}"></script>
+{% endblock scripts %}

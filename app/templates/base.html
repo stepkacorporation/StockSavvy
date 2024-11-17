@@ -16,9 +16,11 @@
     <!-- Подключение Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+    {% block head %}{% endblock %}
+
 </head>
 
-<body class="min-h-screen flex flex-col items-center bg-base-200">
+<body class="min-h-screen flex flex-col items-center">
 
     {% include 'header.html' %}
 
@@ -29,6 +31,8 @@
     {% include 'footer.html' %}
 
     <script src="{% static 'js/footer.js' %}"></script>
+
+    {% block scripts %}{% endblock %}
 
 </body>
 

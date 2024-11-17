@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}StockSavvy - stocks{% endblock title %}
+
+
+{% block content %}
+
+<div class="container mx-auto my-7">
+    <div class="list-group mb-5 mx-2">
+
+        {% include 'stocks/components/ticker_search.html' %}
+
+        {% if stocks %}
+            <!-- Заголовок таблицы -->
+            <div class="bg-secondary text-secondary-content select-none p-4 rounded-tl-lg rounded-tr-lg">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {% with current_sorting=request.GET.sort_by current_order=request.GET.order %}
+                        <div class="text-sm md:text-base">
+                            {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='name' current_order=current_order title='Название' %}
+                        </div>
+                        <div class="hidden md:block text-right text-sm md:text-base">
+                            {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='price' current_order=current_order title='Цена' %}
+                        </div>
+                        <div class="hidden md:block text-right text-sm md:text-base">
+                            {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='per_day' current_order=current_order title='За день' %}
+                        </div>
+                        <div class="hidden md:block text-right text-sm md:text-base">
+                            {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='per_year' current_order=current_order title='За год' %}
+                        </div>
+                        <div class="text-right text-sm md:hidden">
+                            {% include 'stocks/components/sorting_link.html' with params=params current_sorting=current_sorting sort_by='per_year' current_order=current_order title='Цена / За год' %}
+                        </div>
+                    {% endwith %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% for stock in stocks %}
+
+            {% block stock_item %}
+                {% include 'stocks/components/stock_item.html' %}
+            {% endblock stock_item %}
+
+        {% empty %}
+
+            {% if request.GET.query %}
+                <p class="text-center fs-5">По вашему запросу акции не найдены</p>
+            {% else %}
+                {% block no_stocks_text %}
+                    <p class="text-center fs-5">Информация об акциях отсутствует</p>
+                {% endblock no_stocks_text %}
+            {% endif %}
+
+        {% endfor %}
+    </div>
+
+    <div class="text-center">
+        {% include 'pagination.html' %}
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        function setPaginationSize() {
+            const width = window.innerWidth;
+            const pagination = document.querySelector('.pagination');
+            if (pagination) {
+                pagination.classList.toggle("pagination-sm", width <= 576);
+            }
+        }
+
+        setPaginationSize()
+
+        window.addEventListener('resize', function () {
+            setPaginationSize();
+        });
+    });
+    </script>
+{% endblock scripts %}

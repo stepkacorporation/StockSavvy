@@ -1,0 +1,71 @@
+{% load static %}
+{% load formatting_filters %}
+
+<div class="position-relative stock-item-container">
+    {% if request.user.is_authenticated %}
+        <div class="image-container position-absolute top-50 translate-middle-y d-none d-md-block" style="left: -45px;">
+            {% static "icons/star-fill.svg" as star_fill_src %}
+            {% static "icons/star.svg" as star_src %}
+            {% if stock.ticker in favourite_stocks %}
+                {% include "stocks/components/star.html" with current_src=star_fill_src star_fill_src=star_fill_src classes="stock-item-star favourite" styles="padding: 20px;" title="In Favorites" user_id=request.user.id stock_ticker=stock.ticker hide_on_delete=hide_on_delete %}
+            {% else %}
+                {% include "stocks/components/star.html" with current_src=star_src star_fill_src=star_fill_src classes="stock-item-star" styles="padding: 20px;" title="Add to Favorites" user_id=request.user.id stock_ticker=stock.ticker hide_on_delete=hide_on_delete %}
+            {% endif %}
+        </div>
+    {% endif %}
+    <div class="list-group-item bg-base-100 border p-4 hover:bg-base-200 transition duration-200 cursor-pointer"
+         style="margin-bottom: -1px;"
+         onclick="window.location.href='{{ stock.get_absolute_url }}'"
+    >
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <!-- Название акции -->
+            <div class="text-sm md:text-base font-bold">
+                <a href="{{ stock.get_absolute_url }}" class="text-primary hover:underline">
+                    {{ stock.shortname }}
+                </a>
+                <div class="text-secondary text-sm">{{ stock.ticker }}</div>
+            </div>
+
+            <!-- Цена -->
+            <div class="hidden md:block text-right text-sm md:text-base">
+                {% normalize stock.get_last_price|default_if_none:"-" places=stock.decimals %}
+                {{ stock.currencyid|convert_currency_code }}
+            </div>
+
+            <!-- Изменение за день -->
+            {% with value_per_day=stock.price_change.value_per_day percent_per_day=stock.price_change.percent_per_day %}
+            <div class="hidden md:block text-right text-sm md:text-base {% if value_per_day > 0 %}text-success{% elif value_per_day < 0 %}text-danger{% endif %}">
+                {% if not value_per_day and not percent_per_day %}
+                -
+                {% else %}
+                    <div>{% normalize value_per_day places=stock.decimals plus=True %} {{ stock.currencyid|convert_currency_code }}</div>
+                    <div class="text-sm">{% normalize percent_per_day places=2 minus=False %} %</div>
+                {% endif %}
+            </div>
+            {% endwith %}
+
+            <!-- Изменение за год -->
+            {% with value_per_year=stock.price_change.value_per_year percent_per_year=stock.price_change.percent_per_year %}
+            <div class="hidden md:block text-right text-sm md:text-base {% if value_per_year > 0 %}text-success{% elif value_per_year < 0 %}text-error{% endif %}">
+                {% if not value_per_year and not percent_per_year %}
+                -
+                {% else %}
+                    <div>{% normalize value_per_year places=stock.decimals plus=True %} {{ stock.currencyid|convert_currency_code }}</div>
+                    <div class="text-sm">{% normalize percent_per_year places=2 minus=False %} %</div>
+                {% endif %}
+            </div>
+            {% endwith %}
+
+            <!-- Цена и изменение за год (для мобильных) -->
+            <div class="text-right text-sm md:hidden {% if stock.price_change.value_per_year > 0 %}text-success{% elif stock.price_change.value_per_year < 0 %}text-error{% endif %}">
+                {% if not stock.price_change.value_per_year and not stock.price_change.percent_per_year %}
+                -
+                {% else %}
+                    <span>{% normalize stock.get_last_price|default_if_none:"-" places=stock.decimals %} {{ stock.currencyid|convert_currency_code }}</span>
+                    /
+                    <span>{% normalize stock.price_change.percent_per_year places=2 minus=False %} %</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

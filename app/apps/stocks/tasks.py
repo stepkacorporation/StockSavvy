@@ -86,7 +86,6 @@ def load_available_stocks() -> int:
 
     try:
         stocks: list[dict] = Market('stocks').tickers(use_dataframe=False)
-        logger.info(f'{type(stocks)} {stocks=}')
     except RequestException as error:
         logger.error(f'Произошла ошибка RequestException: {error}', exc_info=True)
         raise
@@ -98,7 +97,6 @@ def load_available_stocks() -> int:
 
     stock_objects = []
     for stock in stocks:
-        logger.info(f'{type(stock)} {stock=}')
         try:
             stock_objects.append(Stock(
                 ticker=stock.get('SECID'),
