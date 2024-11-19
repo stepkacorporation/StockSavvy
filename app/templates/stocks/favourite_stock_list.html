@@ -1,6 +1,6 @@
 {% extends 'stocks/stock_list.html' %}
 
-{% block title %}StockSavvy - favourite stocks{% endblock title %}
+{% block title %}Избранные акции | StockSavvy{% endblock title %}
 
 {% block stock_item %}
 
@@ -11,20 +11,11 @@
 {% block no_stocks_text %}
 
     <div class="text-center">
-        <p class="fs-5 mb-2">Your favorites list is empty.</p>
-        <a href="{% url 'stocks' %}">Add stocks</a>
+        <p class="fs-5 mb-2">У вас нет акций в избранном</p>
+        <a class="link link-primary" href="{% url 'stocks' %}">Добавить акции</a>
     </div>
     
 {% endblock no_stocks_text %}
-
-{% block additional_info %}
-    
-    <div class="text-center empty-favorites-text" style="display: none;">
-        <p class="fs-5 mb-2">Your favorites list is empty.</p>
-        <a href="{% url 'stocks' %}">Add stocks</a>
-    </div>
-
-{% endblock additional_info %}
 
 {% block scripts %}
 {% endblock scripts %}

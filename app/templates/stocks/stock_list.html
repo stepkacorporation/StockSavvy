@@ -2,8 +2,7 @@
 
 {% load static %}
 
-{% block title %}StockSavvy - stocks{% endblock title %}
-
+{% block title %}Акции | StockSavvy{% endblock title %}
 
 {% block content %}
 
@@ -62,23 +61,3 @@
 </div>
 
 {% endblock content %}
-
-{% block scripts %}
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        function setPaginationSize() {
-            const width = window.innerWidth;
-            const pagination = document.querySelector('.pagination');
-            if (pagination) {
-                pagination.classList.toggle("pagination-sm", width <= 576);
-            }
-        }
-
-        setPaginationSize()
-
-        window.addEventListener('resize', function () {
-            setPaginationSize();
-        });
-    });
-    </script>
-{% endblock scripts %}
