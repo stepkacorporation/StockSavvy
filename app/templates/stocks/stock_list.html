@@ -9,9 +9,17 @@
 <div class="container mx-auto my-7">
     <div class="list-group mb-5 mx-2">
 
-        {% include 'stocks/components/ticker_search.html' %}
+        <div class="text-center mt-5 mb-7">
+            {% block stock_header_content %}
+                <h1 class="text-2xl md:text-4xl font-bold mb-5">Акции Московской биржи <span class="text-primary">(MOEX)</span></h1>
+                <p class="text-sm md:text-base">На платформе представлено более <strong>{{ total_stocks_rounded }} акций</strong>, с актуальной стоимостью и динамикой изменения цен</p>
+            {% endblock stock_header_content %}
+        </div>
 
         {% if stocks %}
+
+            {% include 'stocks/components/ticker_search.html' %}
+
             <!-- Заголовок таблицы -->
             <div class="bg-secondary text-secondary-content select-none p-4 rounded-tl-lg rounded-tr-lg">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -45,10 +53,11 @@
         {% empty %}
 
             {% if request.GET.query %}
+                {% include 'stocks/components/ticker_search.html' %}
                 <p class="text-center fs-5">По вашему запросу акции не найдены</p>
             {% else %}
                 {% block no_stocks_text %}
-                    <p class="text-center fs-5">Информация об акциях отсутствует</p>
+                    <p class="text-center fs-5">На данный момент информация об акциях отсутствует</p>
                 {% endblock no_stocks_text %}
             {% endif %}
 

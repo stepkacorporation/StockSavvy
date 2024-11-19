@@ -69,6 +69,10 @@ class StockListView(ListView):
         current_url_name = resolve(self.request.path_info).url_name
         context['current_page'] = current_url_name
 
+        total_stocks = Stock.objects.count()
+        total_stocks_rounded = round(total_stocks / 10) * 10
+        context['total_stocks_rounded'] = total_stocks_rounded
+
         return context
 
     def get(self, request, *args, **kwargs):
