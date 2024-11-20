@@ -7,6 +7,7 @@ from django.db.models.functions import Coalesce
 from django.urls import resolve
 from django.views.generic import ListView, DetailView
 
+from app.utils.plurals import choose_plural
 from .models import Stock
 from .templatetags.formatting_filters import normalize, convert_currency_code
 from .utils.cache_keys import DEFAULT_TIMEOUT, STOCK_DETAIL_KEY
@@ -131,7 +132,8 @@ class StockDetailView(DetailView):
         daily_price_range = get_price_range(stock, _decimals, _currency, per='day')
         yearly_price_range = get_price_range(stock, _decimals, _currency, per='year')
 
-        lot_size = f'1 lot = {stock.lotsize} stocks'
+        _lot_size_text = choose_plural(stock.lotsize, ('акция', 'акции', 'акций'))
+        lot_size = f'1 лот = {_lot_size_text}'
 
         extra_context = {
             'opening_price': normalize(opening_price, places=_decimals),
