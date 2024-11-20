@@ -1,3 +1,5 @@
+import math
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.db.models import Q, Value, DecimalField
@@ -70,7 +72,7 @@ class StockListView(ListView):
         context['current_page'] = current_url_name
 
         total_stocks = Stock.objects.count()
-        total_stocks_rounded = round(total_stocks / 10) * 10
+        total_stocks_rounded = math.floor(total_stocks / 10) * 10
         context['total_stocks_rounded'] = total_stocks_rounded
 
         return context
