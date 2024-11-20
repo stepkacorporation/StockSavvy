@@ -11,7 +11,7 @@
 {% block stock_header_content %}
 
     <h1 class="text-2xl md:text-4xl font-bold mb-5">Избранные акции</h1>
-    <p class="text-sm md:text-base">Добавляйте акции в избранное, чтобы быстро отслеживать их изменения и всегда иметь доступ к вашим любимым акциям</p>
+    <p class="text-sm md:text-base">Добавляйте <a href="{% url 'stocks' %}" class="link link-primary">акции</a> в избранное, чтобы быстро отслеживать их изменения и всегда иметь доступ к вашим любимым активам</p>
 
 {% endblock stock_header_content %}
 
@@ -21,7 +21,7 @@
     <div class="divider"></div>
 
     <div class="text-center">
-        <p class="fs-5 mb-2">У вас нет акций в избранном</p>
+        <p class="fs-5 mb-2">Избранное пустует. Найдите интересные акции и добавьте их в этот список</p>
         <a class="link link-primary" href="{% url 'stocks' %}">Добавить акции</a>
     </div>
     
