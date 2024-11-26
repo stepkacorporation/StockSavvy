@@ -17,6 +17,9 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str
 
+    CORS_ALLOWED_ORIGINS: list[str]
+    CSRF_TRUSTED_ORIGINS: list[str]
+
     POSTGRES_DB: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str

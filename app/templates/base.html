@@ -38,6 +38,12 @@
 
     {% block scripts %}{% endblock %}
 
+    <script>
+        function getThemeColor(colorName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(`--${colorName}`).trim();
+        }
+        console.log(getThemeColor('primary'))
+    </script>
 </body>
 
 </html>
