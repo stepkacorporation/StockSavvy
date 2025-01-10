@@ -3,7 +3,7 @@ import os
 import sys
 
 from celery import Celery
-# from celery.schedules import crontab
+from celery.schedules import crontab
 from celery.signals import after_setup_logger, task_failure, after_setup_task_logger
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -18,13 +18,12 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
 
-# app.conf.beat_schedule = {
-#     'update-stock-data-every-day': {
-#         'task': 'apps.stocks.tasks.load_stock_data',
-#         'schedule': crontab(minute=0, hour=0),
-#         'kwargs': {'update': True},
-#     },
-# }
+app.conf.beat_schedule = {
+    'update-stock-data-every-day': {
+        'task': 'apps.stocks.tasks.load_daily_stock_data',
+        'schedule': crontab(minute=0, hour=0),  # Каждый день в полночь
+    },
+}
 
 
 @task_failure.connect

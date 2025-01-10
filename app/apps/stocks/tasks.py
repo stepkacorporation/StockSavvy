@@ -6,6 +6,7 @@ from celery.exceptions import Retry
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.backends.postgresql.psycopg_any import DateTimeRange
+from django.utils import timezone
 from loguru import logger
 from moexalgo import Market
 from requests.exceptions import RequestException
@@ -18,6 +19,7 @@ from .utils.tasks import (
     calculate_price_change_per_day,
     calculate_price_change_per_year
 )
+from .utils.cache_utils import clear_stock_cache_for_ticker
 
 
 @app.task
@@ -39,14 +41,14 @@ def _log_execution_time(start_time: float, message: str) -> float:
 
 
 @app.task
-def load_stock_data(update: bool = False) -> None:
+def load_stock_data(start_date: date = None, end_date: date = None) -> None:
     """
     Запускает задачи для загрузки доступных акций, исторических данных
-    и изменений цен для всех загруженных доступных акций.
+    и расчёта изменений цен для всех загруженных акций за указанный период.
 
     Параметры:
-        - update (bool): Если True, загружает исторические данные за последний доступный период.
-        Если False, загружает исторические данные за все доступные периоды.
+        - start_date (str): Начальная дата периода в формате 'YYYY-MM-DD'.
+        - end_date (str): Конечная дата периода в формате 'YYYY-MM-DD'.
 
     Возвращает:
         - None
@@ -56,14 +58,23 @@ def load_stock_data(update: bool = False) -> None:
     _start_time = perf_counter()
     _execution_message = 'Данные о акциях успешно загружены за'
 
-    load_historical_data_func = load_latest_historical_data if update else load_historical_data
-
     celery.chain(
         load_available_stocks.si(),
-        load_historical_data_func(),
-        load_price_changes(),
+        process_all_stocks_data.si(start_date, end_date),
         _log_execution_time.si(_start_time, _execution_message),
     ).apply_async()
+
+
+@app.task
+def load_daily_stock_data():
+    """
+    Обертка для ежедневной загрузки данных об акциях.
+    Использует текущую дату в качестве конечной.
+    """
+
+    end_date = timezone.now()
+    start_date = end_date - timedelta(days=2)
+    load_stock_data(start_date=start_date, end_date=end_date)
 
 
 @app.task(autoretry_for=(Exception,), retry_backoff=5, retry_kwargs={'max_retries': 10})
@@ -154,48 +165,55 @@ def load_available_stocks() -> int:
 
 
 @app.task
-def load_latest_historical_data(days: int = 1) -> celery.group:
+def process_all_stocks_data(start_date: date = None, end_date: date = None) -> None:
     """
-    Запускает и возвращает группу задач для загрузки исторических данных для всех акций.
+    Запускает задачи для обработки данных для всех акций. Каждая задача будет
+    загружать данные и рассчитывать изменения цен для одного тикера.
 
     Параметры:
-        - days (int): Количество дней, для которых должны быть загружены исторические данные.
-            По умолчанию равно 1, что означает загрузку данных за предыдущий день.
+        - start_date (date): Дата начала загрузки данных.
+        - end_date (date): Дата окончания загрузки данных.
 
     Возвращает:
-        - celery.group: Группа задач для загрузки исторических данных за указанный период.
+        - None
     """
 
-    days = days if days >= 1 else 1
-
-    end_date = date.today()
-    start_date = end_date - timedelta(days=days)
-
-    return load_historical_data(start_date, end_date)
-
-
-@app.task
-def load_historical_data(start_date: date = None, end_date: date = None) -> celery.group:
-    """
-    Запускает и возвращает группу задач для загрузки исторических данных для всех акций.
-
-    Параметры:
-        - start_date (date или None): Дата начала для загрузки исторических данных.
-            По умолчанию None, что означает загрузку с самой ранней доступной даты.
-        - end_date (date или None): Дата окончания для загрузки исторических данных.
-            По умолчанию None, что означает загрузку до самой поздней доступной даты.
-
-    Возвращает:
-        - celery.group: Группа задач для загрузки исторических данных за указанный период.
-    """
-
+    logger.info('Начало обработки данных для всех акций')
     stocks = Stock.objects.all().values('ticker')
+
     tasks_group = celery.group(
-        load_historical_data_for_ticker.si(stock['ticker'], start_date, end_date)
+        process_ticker_data.si(stock['ticker'], start_date, end_date)
         for stock in stocks
     )
 
-    return tasks_group
+    tasks_group.apply_async()
+    logger.info('Все задачи на обработку акций отправлены в очередь')
+
+
+@app.task(autoretry_for=(Exception,), retry_backoff=5, retry_kwargs={'max_retries': 10})
+def process_ticker_data(ticker, start_date: date = None, end_date: date = None) -> None:
+    """
+    Загружает свечные данные для акции и рассчитывает изменения цен.
+
+    Параметры:
+        - ticker (str): Тикер акции, для которой будет выполнена обработка.
+        - start_date (date): Дата начала загрузки данных.
+        - end_date (date): Дата окончания загрузки данных.
+
+    Возвращает:
+        - None
+    """
+
+    logger.info(f'Начало обработки данных для {ticker}')
+    _start_time = perf_counter()
+
+    # Шаг 1: Загрузка свечных данных
+    load_historical_data_for_ticker(ticker, start_date, end_date)
+
+    # Шаг 2: Расчёт изменения цен
+    load_price_changes_for_ticker(ticker)
+
+    _log_execution_time(_start_time, f'Обработка тикера {ticker} завершена за')
 
 
 @app.task(autoretry_for=(Exception,), retry_backoff=5, retry_kwargs={'max_retries': 10})
@@ -285,24 +303,6 @@ def load_historical_data_for_ticker(ticker: str, start_date: date = None, end_da
         return created_candles
 
 
-@app.task
-def load_price_changes() -> celery.group:
-    """
-    Запускает и возвращает группу задач для загрузки изменений цен для всех акций.
-
-    Возвращает:
-        - celery.group: Группа задач для загрузки изменений цен для всех акций.
-    """
-
-    stocks = Stock.objects.all().values('ticker')
-    tasks_group = celery.group(
-        load_price_changes_for_ticker.si(stock['ticker'])
-        for stock in stocks
-    )
-
-    return tasks_group
-
-
 @app.task(autoretry_for=(Exception,), retry_backoff=5, retry_kwargs={'max_retries': 10})
 def load_price_changes_for_ticker(ticker: str) -> None:
     """
@@ -352,4 +352,5 @@ def load_price_changes_for_ticker(ticker: str) -> None:
         logger.error(f'Произошла непредвиденная ошибка: {error}', exc_info=True)
         raise
 
+    clear_stock_cache_for_ticker(ticker)
     logger.info(f'Изменения цен для {ticker=} успешно загружены за {perf_counter() - _start_time}s')

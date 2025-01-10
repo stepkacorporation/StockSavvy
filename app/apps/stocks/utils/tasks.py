@@ -87,7 +87,7 @@ def load_candles(ticker: str, start_date: date, end_date: date) -> Generator[Gen
     try:
         logger.debug(f'Начало обработки свечей для {ticker=}')
         while start_date < end_date:
-            till_date = start_date + timedelta(days=365)
+            till_date = start_date + timedelta(days=30)
             candles: Generator = ticker_obj.candles(start=start_date, end=till_date, use_dataframe=False)
             yield candles
             start_date = till_date
