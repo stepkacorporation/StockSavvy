@@ -51,6 +51,7 @@
             <div class="hidden md:block text-right text-sm md:text-base">
                 {% normalize stock.get_last_price|default_if_none:"-" places=stock.decimals %}
                 {{ stock.currencyid|convert_currency_code }}
+                <div class="hidden md:block text-sm">{{ stock.get_lotsize_text }}</div>
             </div>
 
             <!-- Изменение за день -->

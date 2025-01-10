@@ -17,6 +17,8 @@ from .utils.cache_keys import (
     OPENING_CLOSING_PRICE_TODAY_KEY,
 )
 
+from app.utils.plurals import choose_plural
+
 User = get_user_model()
 
 
@@ -268,6 +270,9 @@ class Stock(models.Model):
         date = first_candle.time_range.upper if first_candle else None
         cache.set(cache_key, date, timeout=DEFAULT_TIMEOUT)
         return date
+
+    def get_lotsize_text(self):
+        return f'1 лот = {choose_plural(self.lotsize, ("акция", "акции", "акций"))}'
 
 
 class BlacklistedStock(models.Model):
